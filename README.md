@@ -19,7 +19,7 @@ Development Installation
 
 1. Clone the repository::
 
-        git clone git@github.com:glencoesoftware/omero-ms-thumbnail.git
+        git clone git@github.com:glencoesoftware/omero-ms-core.git
 
 1. Run the Gradle build and utilize the artifacts as required::
 
