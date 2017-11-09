@@ -86,7 +86,10 @@ public class OmeroWebSessionRequestHandler implements Handler<RoutingContext>{
         final String djangoSessionKey = cookie.getValue();
         log.debug("OMERO.web session key: {}", djangoSessionKey);
         sessionStore.getConnectorAsync(djangoSessionKey)
-            .thenAccept(connector -> {
+            .whenComplete((connector, throwable) -> {
+                if (throwable != null) {
+                    log.error("Exception retrieving connector", throwable);
+                }
                 if (connector == null) {
                     event.response().setStatusCode(403);
                     event.response().end();
