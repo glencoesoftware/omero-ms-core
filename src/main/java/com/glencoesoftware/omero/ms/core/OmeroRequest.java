@@ -33,10 +33,9 @@ import omero.ServerError;
  * OMERO session aware request which provides session joining and lifecycle
  * management for executing OMERO client actions.
  * @author Chris Allan <callan@glencoesoftware.com>
- * @param <T>
  *
  */
-public class OmeroRequest<T> implements Closeable {
+public class OmeroRequest implements Closeable {
 
     private static final org.slf4j.Logger log =
             LoggerFactory.getLogger(OmeroRequest.class);
@@ -49,7 +48,7 @@ public class OmeroRequest<T> implements Closeable {
 
     /**
      * Default constructor. The session is joined once the instance has been
-     * constructed. {@link #execute(OmeroRequestExecutor)} can be called as
+     * constructed. {@link #execute(OmeroRequestHandler)} can be called as
      * soon as required.
      * @param host OMERO server host.
      * @param port OMERO server port.
@@ -78,15 +77,15 @@ public class OmeroRequest<T> implements Closeable {
     }
 
     /**
-     * Execute OMERO client actions with a valid session..
-     * @param executor The handler that is to actually execute the one or more
+     * Execute OMERO client actions with a valid session.
+     * @param handler The handler that is to actually execute the one or more
      * client actions.
      * @throws ServerError If there is a server error executing one or more of
      * the client actions.
      */
-    public T execute(OmeroRequestExecutor<T> executor)
+    public <T> T execute(OmeroRequestHandler<T> handler)
             throws ServerError {
-        return executor.execute(client);
+        return handler.execute(client);
     }
 
     /**

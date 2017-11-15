@@ -24,7 +24,8 @@ package com.glencoesoftware.omero.ms.core;
  * @author Chris Allan <callan@glencoesoftware.com>
  *
  */
-public interface OmeroRequestExecutor<T> {
+@FunctionalInterface
+public interface OmeroRequestHandler<T> {
 
     T execute(omero.client client);
 
