@@ -72,7 +72,7 @@ public class RedisCacheVerticle extends AbstractVerticle {
                 REDIS_CACHE_GET_EVENT, event -> {
                     get(event);
                 });
-        vertx.eventBus().<String>consumer(
+        vertx.eventBus().<JsonObject>consumer(
                 REDIS_CACHE_SET_EVENT, event -> {
                     set(event);
                 });
@@ -88,8 +88,7 @@ public class RedisCacheVerticle extends AbstractVerticle {
             return;
         }
 
-        JsonObject data = new JsonObject(message.body());
-        String key = data.getString("key");
+        String key = message.body();
         if (key == null) {
             message.reply(null);
             return;
@@ -117,14 +116,14 @@ public class RedisCacheVerticle extends AbstractVerticle {
     /**
      * Set a key in the cache.
      */
-    private void set(Message<String> message) {
+    private void set(Message<JsonObject> message) {
         if (connection == null) {
             log.debug("Cache not enabled");
             message.reply(null);
             return;
         }
 
-        JsonObject data = new JsonObject(message.body());
+        JsonObject data = message.body();
         String key = data.getString("key");
         byte[] value = data.getBinary("value");
         if (key == null) {
