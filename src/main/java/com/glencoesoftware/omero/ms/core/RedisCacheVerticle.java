@@ -94,7 +94,7 @@ public class RedisCacheVerticle extends AbstractVerticle {
             message.reply(null);
             return;
         }
-        log.debug("Retrieving cache key: {}", key);
+        log.debug("Getting cache key: {}", key);
 
         RedisAsyncCommands<byte[], byte[]> commands = connection.async();
         final StopWatch t0 = new Slf4JStopWatch("get");
@@ -131,10 +131,10 @@ public class RedisCacheVerticle extends AbstractVerticle {
             message.reply(null);
             return;
         }
-        log.debug("Retrieving cache key: {}", key);
+        log.debug("Setting cache key: {}", key);
 
         RedisAsyncCommands<byte[], byte[]> commands = connection.async();
-        final StopWatch t0 = new Slf4JStopWatch("put");
+        final StopWatch t0 = new Slf4JStopWatch("set");
         // Binary retrieval, get(String) includes a UTF-8 step
         RedisFuture<String> future = commands.set(key.getBytes(), value);
         future.whenComplete((v, t) -> {
