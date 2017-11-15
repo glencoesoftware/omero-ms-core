@@ -65,6 +65,8 @@ public class OmeroRequest implements Closeable {
     public OmeroRequest(String host, int port, String omeroSessionKey)
             throws PermissionDeniedException, CannotCreateSessionException,
                 ServerError {
+        log.debug("Connecting to the server: {}, {}, {}",
+                host, port, omeroSessionKey);
         this.omeroSessionKey = omeroSessionKey;
         this.client = new omero.client(host, port);
         StopWatch t0 = new Slf4JStopWatch("joinSession");
