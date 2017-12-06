@@ -82,6 +82,7 @@ public class OmeroWebSessionRequestHandler implements Handler<RoutingContext>{
         if (cookie == null) {
             event.response().setStatusCode(403);
             event.response().end();
+            return;
         }
         final String djangoSessionKey = cookie.getValue();
         log.debug("OMERO.web session key: {}", djangoSessionKey);
