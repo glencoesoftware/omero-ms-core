@@ -68,9 +68,6 @@ configurations.all {
     exclude group: 'org.ini4j'
     exclude group: 'org.postgresql'
     exclude group: 'org.scijava'
-    exclude group: 'org.springframework', module: 'spring-context-support'
-    exclude group: 'org.springframework', module: 'spring-orm'
-    exclude group: 'org.springframework.security'
     exclude group: 'org.subethamail'
     exclude group: 'pdfbox'
     exclude group: 'quartz'
@@ -86,7 +83,6 @@ dependencies {
     compile 'omero:blitz:5.3.5-ice36-b73'
     compile 'org.perf4j:perf4j:0.9.16'
     compile 'org.python:jython-standalone:2.7.0'
-    compile 'org.springframework:spring-core:3.0.1.RELEASE'
 
     testCompile 'org.testng:testng:6.10'
 }
