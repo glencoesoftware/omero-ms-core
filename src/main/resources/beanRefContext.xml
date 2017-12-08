@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN"
+  "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+  <description>
+        Defines the beans for microservices.
+  </description>
+
+  <bean name="/OMERO/Pixels" class="com.glencoesoftware.omero.ms.core.PixelsService"
+        parent="filesystem">
+    <!-- index=0 "path" comes from parent -->
+    <constructor-arg index="1" ref="MemoizerWait"/>
+    <constructor-arg ref="omeroFilePathResolver"/>
+    <constructor-arg ref="backOff"/>
+    <constructor-arg ref="tileSizes"/>
+    <constructor-arg><null /></constructor-arg>
+    <property name="metrics" ref="metrics"/>
+  </bean>
+
+</beans>
