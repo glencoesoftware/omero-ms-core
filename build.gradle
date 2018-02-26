@@ -79,7 +79,7 @@ configurations.all {
 
 dependencies {
     compile 'biz.paluch.redis:lettuce:4.3.2.Final'
-    compile 'io.vertx:vertx-web:3.4.1'
+    compile 'io.vertx:vertx-web:3.5.1'
     compile 'omero:blitz:5.4.3-ice36-b77'
     compile 'org.perf4j:perf4j:0.9.16'
     compile 'org.python:jython-standalone:2.7.0'
