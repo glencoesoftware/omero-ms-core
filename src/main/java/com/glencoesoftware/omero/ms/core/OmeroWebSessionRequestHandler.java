@@ -21,6 +21,7 @@ package com.glencoesoftware.omero.ms.core;
 import org.slf4j.LoggerFactory;
 
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
 
@@ -35,13 +36,19 @@ public class OmeroWebSessionRequestHandler implements Handler<RoutingContext>{
             LoggerFactory.getLogger(OmeroWebSessionRequestHandler.class);
 
     /** OMERO.web session store. */
-    private OmeroWebSessionStore sessionStore;
+    private final OmeroWebSessionStore sessionStore;
+
+    /** Microservice wide configuration. */
+    private final JsonObject config;
 
     /**
      * Default constructor.
+     * @param config Microservice wide configuration.
      * @param sessionStore OMERO.web session store implementation.
      */
-    public OmeroWebSessionRequestHandler(OmeroWebSessionStore sessionStore) {
+    public OmeroWebSessionRequestHandler(
+            JsonObject config, OmeroWebSessionStore sessionStore) {
+        this.config = config;
         this.sessionStore = sessionStore;
     }
 
@@ -78,7 +85,10 @@ public class OmeroWebSessionRequestHandler implements Handler<RoutingContext>{
 
         // Finally, check if we have a standard OMERO.web cookie available to
         // retrieve the session key from.
-        Cookie cookie = event.getCookie("sessionid");
+        JsonObject omeroWeb = config.getJsonObject(
+                "omero.web", new JsonObject());
+        String name = omeroWeb.getString("session_cookie_name", "sessionid");
+        Cookie cookie = event.getCookie(name);
         if (cookie == null) {
             event.response().setStatusCode(403);
             event.response().end();
