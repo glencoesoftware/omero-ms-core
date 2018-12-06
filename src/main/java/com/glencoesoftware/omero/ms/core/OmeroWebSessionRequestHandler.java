@@ -41,6 +41,8 @@ public class OmeroWebSessionRequestHandler implements Handler<RoutingContext>{
     /** Microservice wide configuration. */
     private final JsonObject config;
 
+    private final String handlerSynchronicity;
+
     /**
      * Default constructor.
      * @param config Microservice wide configuration.
@@ -49,7 +51,22 @@ public class OmeroWebSessionRequestHandler implements Handler<RoutingContext>{
     public OmeroWebSessionRequestHandler(
             JsonObject config, OmeroWebSessionStore sessionStore) {
         this.config = config;
+        handlerSynchronicity = config.getJsonObject("session-store")
+            .getString("synchronicity");
+
         this.sessionStore = sessionStore;
+    }
+
+
+    private void handleConnector(IConnector connector, RoutingContext event){
+        if (connector == null) {
+            log.error("Connector was null!");
+            event.response().setStatusCode(403);
+            event.response().end();
+            return;
+        }
+        event.put("omero.session_key", connector.getOmeroSessionKey());
+        event.next();
     }
 
     /**
@@ -60,6 +77,16 @@ public class OmeroWebSessionRequestHandler implements Handler<RoutingContext>{
      */
     @Override
     public void handle(RoutingContext event) {
+        if (handlerSynchronicity.equals("sync")) {
+            handleSync(event);
+        }
+        else if (handlerSynchronicity.equals("async")) {
+            handleAsync(event);
+        }
+    }
+
+
+    public void handleAsync(RoutingContext event) {
         // First try to get the OMERO session key from the
         // `X-OMERO-Session-Key` request header.
         String sessionKey =
@@ -98,17 +125,53 @@ public class OmeroWebSessionRequestHandler implements Handler<RoutingContext>{
         log.debug("OMERO.web session key: {}", djangoSessionKey);
         sessionStore.getConnectorAsync(djangoSessionKey)
             .whenComplete((connector, throwable) -> {
-                if (throwable != null) {
-                    log.error("Exception retrieving connector", throwable);
-                }
-                if (connector == null) {
-                    event.response().setStatusCode(403);
-                    event.response().end();
-                    return;
-                }
-                event.put("omero.session_key", connector.getOmeroSessionKey());
-                event.next();
-            });
+            if (throwable != null) {
+                log.error("Exception retrieving connector", throwable);
+            }
+            handleConnector(connector, event);
+        });
+    }
+
+
+    public void handleSync(RoutingContext event) {
+        // First try to get the OMERO session key from the
+        // `X-OMERO-Session-Key` request header.
+        String sessionKey =
+                event.request().headers().get("X-OMERO-Session-Key");
+        if (sessionKey != null) {
+            log.debug("OMERO session key from header: {}", sessionKey);
+            event.put("omero.session_key", sessionKey);
+            event.next();
+            return;
+        }
+
+        // Next see if it was provided via the `bsession` URL parameter
+        sessionKey = event.request().getParam("bsession");
+        if (sessionKey != null) {
+            log.debug(
+                "OMERO session key from 'bsession' URL parameter: {}",
+                sessionKey
+            );
+            event.put("omero.session_key", sessionKey);
+            event.next();
+            return;
+        }
+
+        // Finally, check if we have a standard OMERO.web cookie available to
+        // retrieve the session key from.
+        JsonObject omeroWeb = config.getJsonObject(
+                "omero.web", new JsonObject());
+        String name = omeroWeb.getString("session_cookie_name", "sessionid");
+        Cookie cookie = event.getCookie(name);
+        if (cookie == null) {
+            event.response().setStatusCode(403);
+            event.response().end();
+            return;
+        }
+        final String djangoSessionKey = cookie.getValue();
+        log.debug("OMERO.web session key: {}", djangoSessionKey);
+        IConnector connector = sessionStore.getConnector(djangoSessionKey);
+        handleConnector(connector, event);
     }
 
 }
