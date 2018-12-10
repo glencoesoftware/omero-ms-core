@@ -50,19 +50,32 @@ import io.vertx.ext.sql.ResultSet;
 
 /**
  * An OMERO.web session store.
- * @author Chris Allan <callan@glencoesoftware.com>
+ * @author Keivn Kozlowski <kevin@glencoesoftware.com>
  *
  */
 public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
 
+    /** SQL statement for retrieving session key from django_session table*/
     private static final String SELECT_SESSION_SQL =
         "select session_data from django_session where session_key = ?";
 
+    /** logger */
     private static final org.slf4j.Logger log =
             LoggerFactory.getLogger(OmeroWebJDBCSessionStore.class);
 
+    /** Vertx Async JDBC client */
     private JDBCClient client;
+
+    /** Synchronous JDBC connection  */
     private Connection sync_connection;
+
+    /** Consturctor
+    * @param url base database url
+    * @param user database user to connect as
+    * @param password the user's password
+    * @param vertx the vertx instance for this verticle
+    * @since 3.3
+    */
     public OmeroWebJDBCSessionStore(String url,
         String user,
         String password,
@@ -74,19 +87,24 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
             .put("user", user)
             .put("password", password));
 
-        String full_url = url + "?user=" + user + "&password=" + password; 
         Properties props = new Properties();
         props.setProperty("user", user);
         props.setProperty("password", password);
-        try{
+        try {
             sync_connection = DriverManager.getConnection(url, props);
-        }
-        catch (SQLException e){
+        } catch (SQLException e) {
             throw new RuntimeException(e.toString());
         }
     }
 
-    private IConnector getConnectorFromSessionData(String sessionData){
+    /**
+    * Gets the <code>omeroweb.connector.Connerctor</code>
+    * object from the raw database text
+    * @param sessionData The session_data text from the database
+    * @return The connector from the session data
+    * @since 3.3
+    */
+    private IConnector getConnectorFromSessionData(String sessionData) {
         String decodedSessionData =
             StringUtil.fromBytes(Base64.getDecoder().decode(sessionData));
         PyString pystring = Py.newString(decodedSessionData);
@@ -104,8 +122,9 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
      * <code>omeroweb.connector.Connector</code> synchronously.
      * @param sessionKey Session key to retrieve a connector for.
      * @return Connector instance or <code>null</code> if session lookup fails.
+     * @since 3.3
      */
-    public IConnector getConnector(String sessionKey){
+    public IConnector getConnector(String sessionKey) {
         PreparedStatement st = null;
         try {
             st = sync_connection.prepareStatement(SELECT_SESSION_SQL);
@@ -119,15 +138,13 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
                 String sessionData = rs.getString(1);
                 return getConnectorFromSessionData(sessionData);
             }
-        }
-        catch (SQLException e){
-        }
-        finally {
-            try{
+        } catch (SQLException e) {
+            log.error("SQLException caught when trying to getConnector", e);
+        } finally {
+            try {
                 st.close();
-            }
-            catch (SQLException e){
-                log.error(e.toString());
+            } catch (SQLException e) {
+                log.error("Error closing JDBC statement", e);
             }
         }
 
@@ -141,8 +158,9 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
      * @param sessionKey Session key to retrieve a connector for.
      * @return A new {@link CompletionStage} that, when the {@link IConnector}
      * retrieval is complete is executed.
+     * @since 3.3
      */
-    public CompletionStage<IConnector> getConnectorAsync(String sessionKey){
+    public CompletionStage<IConnector> getConnectorAsync(String sessionKey) {
         CompletableFuture<IConnector> promise = new CompletableFuture<IConnector>();
         client.getConnection(conn -> {
             if (conn.failed()) {
@@ -197,12 +215,14 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
         return promise;
     }
 
+    /**
+    * Close the connection
+    */
     public void close() throws IOException {
-        try{
+        try {
             sync_connection.close();
-        }
-        catch (SQLException e){
-            log.error(e.toString());
+        } catch (SQLException e) {
+            log.error("SQLException when closing connection.", e);
         }
         return;
     }

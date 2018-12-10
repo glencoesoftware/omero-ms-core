@@ -20,6 +20,7 @@ package com.glencoesoftware.omero.ms.core;
 
 import org.slf4j.LoggerFactory;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Cookie;
@@ -41,6 +42,9 @@ public class OmeroWebSessionRequestHandler implements Handler<RoutingContext>{
     /** Microservice wide configuration. */
     private final JsonObject config;
 
+    /** Vertx instance */
+    private final Vertx vertx;
+
     private final String handlerSynchronicity;
 
     /**
@@ -49,8 +53,9 @@ public class OmeroWebSessionRequestHandler implements Handler<RoutingContext>{
      * @param sessionStore OMERO.web session store implementation.
      */
     public OmeroWebSessionRequestHandler(
-            JsonObject config, OmeroWebSessionStore sessionStore) {
+            JsonObject config, OmeroWebSessionStore sessionStore, Vertx vertx) {
         this.config = config;
+        this.vertx = vertx;
         handlerSynchronicity = config.getJsonObject("session-store")
             .getString("synchronicity");
 
@@ -58,7 +63,7 @@ public class OmeroWebSessionRequestHandler implements Handler<RoutingContext>{
     }
 
 
-    private void handleConnector(IConnector connector, RoutingContext event){
+    private void handleConnector(IConnector connector, RoutingContext event) {
         if (connector == null) {
             log.error("Connector was null!");
             event.response().setStatusCode(403);
@@ -170,8 +175,11 @@ public class OmeroWebSessionRequestHandler implements Handler<RoutingContext>{
         }
         final String djangoSessionKey = cookie.getValue();
         log.debug("OMERO.web session key: {}", djangoSessionKey);
-        IConnector connector = sessionStore.getConnector(djangoSessionKey);
-        handleConnector(connector, event);
+        vertx.executeBlocking(future -> {
+            IConnector connector = sessionStore.getConnector(djangoSessionKey);
+            future.complete(connector);
+        }, res-> {
+            handleConnector((IConnector) res.result(), event);
+        });
     }
-
 }
