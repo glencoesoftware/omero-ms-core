@@ -65,7 +65,6 @@ configurations.all {
     exclude group: 'org.hibernate'
     exclude group: 'org.hibernate.javax.persistence'
     exclude group: 'org.ini4j'
-    exclude group: 'org.postgresql'
     exclude group: 'org.scijava'
     exclude group: 'org.subethamail'
     exclude group: 'pdfbox'
@@ -83,7 +82,6 @@ dependencies {
     compile 'org.perf4j:perf4j:0.9.16'
     compile 'org.python:jython-standalone:2.7.0'
     compile 'io.vertx:vertx-jdbc-client:3.5.3'
-    compile 'org.postgresql:postgresql:42.2.5'
 
     testCompile 'org.testng:testng:6.10'
 }

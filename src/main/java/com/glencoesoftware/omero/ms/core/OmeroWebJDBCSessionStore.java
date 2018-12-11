@@ -70,28 +70,20 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
     private Connection sync_connection;
 
     /** Consturctor
-    * @param url base database url
-    * @param user database user to connect as
-    * @param password the user's password
+    * @param url full database URL with connection parameters.
+      e.g. "jdbc:postgresql://localhost:5432/omero_database?user=fred&password=secret&ssl=true"
     * @param vertx the vertx instance for this verticle
     * @since 3.3
     */
     public OmeroWebJDBCSessionStore(String url,
-        String user,
-        String password,
         Vertx vertx) {
         client = JDBCClient.createShared(vertx, new JsonObject()
             .put("url", url)
             .put("driver_class", "org.postgresql.Driver")
-            .put("max_pool_size", 30)
-            .put("user", user)
-            .put("password", password));
+            .put("max_pool_size", 30));
 
-        Properties props = new Properties();
-        props.setProperty("user", user);
-        props.setProperty("password", password);
         try {
-            sync_connection = DriverManager.getConnection(url, props);
+            sync_connection = DriverManager.getConnection(url);
         } catch (SQLException e) {
             throw new RuntimeException(e.toString());
         }
