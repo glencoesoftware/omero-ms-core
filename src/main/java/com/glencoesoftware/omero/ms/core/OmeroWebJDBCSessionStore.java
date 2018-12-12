@@ -147,7 +147,8 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
      * @since 3.3
      */
     public CompletionStage<IConnector> getConnectorAsync(String sessionKey) {
-        CompletableFuture<IConnector> promise = new CompletableFuture<IConnector>();
+        CompletableFuture<IConnector> promise =
+                new CompletableFuture<IConnector>();
         client.getConnection(conn -> {
             if (conn.failed()) {
                 log.error(conn.cause().getMessage());
@@ -180,11 +181,12 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
                         promise.complete(null);
                         return;
                     }
-                    String decodedSessionData =
-                        StringUtil.fromBytes(Base64.getDecoder().decode(sessionData));
+                    String decodedSessionData = StringUtil.fromBytes(
+                            Base64.getDecoder().decode(sessionData));
                     PyString pystring = Py.newString(decodedSessionData);
                     PyList hash_and_data = pystring.split(":", 1);
-                    PyString data_str = new PyString((String) hash_and_data.get(1));
+                    PyString data_str =
+                            new PyString((String) hash_and_data.get(1));
                     PyDictionary djangoSession =
                         (PyDictionary) cPickle.loads(data_str);
                     log.debug("Session: {}", djangoSession);
