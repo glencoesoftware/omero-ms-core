@@ -67,7 +67,7 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
     private Connection sync_connection;
 
     /**
-     * Consturctor
+     * Constructor
      * @param url full database URL with connection parameters.
      *   e.g. "jdbc:postgresql://localhost:5432/omero_database?user=fred&password=secret&ssl=true"
      * @param vertx the vertx instance for this verticle
