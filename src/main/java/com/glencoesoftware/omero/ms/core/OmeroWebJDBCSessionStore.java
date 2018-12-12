@@ -66,12 +66,13 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
     /** Synchronous JDBC connection  */
     private Connection sync_connection;
 
-    /** Consturctor
-    * @param url full database URL with connection parameters.
-    *   e.g. "jdbc:postgresql://localhost:5432/omero_database?user=fred&password=secret&ssl=true"
-    * @param vertx the vertx instance for this verticle
-    * @since 3.3
-    */
+    /**
+     * Consturctor
+     * @param url full database URL with connection parameters.
+     *   e.g. "jdbc:postgresql://localhost:5432/omero_database?user=fred&password=secret&ssl=true"
+     * @param vertx the vertx instance for this verticle
+     * @since 3.3
+     */
     public OmeroWebJDBCSessionStore(String url, Vertx vertx) {
         client = JDBCClient.createShared(vertx, new JsonObject()
             .put("url", url)
@@ -86,12 +87,12 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
     }
 
     /**
-    * Gets the <code>omeroweb.connector.Connerctor</code>
-    * object from the raw database text
-    * @param sessionData The session_data text from the database
-    * @return The connector from the session data
-    * @since 3.3
-    */
+     * Gets the <code>omeroweb.connector.Connerctor</code>
+     * object from the raw database text
+     * @param sessionData The session_data text from the database
+     * @return The connector from the session data
+     * @since 3.3
+     */
     private IConnector getConnectorFromSessionData(String sessionData) {
         String decodedSessionData =
             StringUtil.fromBytes(Base64.getDecoder().decode(sessionData));
@@ -204,8 +205,8 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
     }
 
     /**
-    * Close the connection
-    */
+     * Close the connection
+     */
     public void close() throws IOException {
         try {
             sync_connection.close();
