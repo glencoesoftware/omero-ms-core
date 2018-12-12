@@ -213,6 +213,7 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
      */
     public void close() throws IOException {
         try {
+            client.close();
             if (syncConnection != null) {
                 syncConnection.close();
             }
