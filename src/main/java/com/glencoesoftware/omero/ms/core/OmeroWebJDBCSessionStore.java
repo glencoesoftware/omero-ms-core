@@ -50,7 +50,7 @@ import io.vertx.ext.sql.ResultSet;
 
 /**
  * An OMERO.web session store.
- * @author Keivn Kozlowski <kevin@glencoesoftware.com>
+ * @author Kevin Kozlowski <kevin@glencoesoftware.com>
  *
  */
 public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
