@@ -116,7 +116,7 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
             st.setString(1, sessionKey);
             java.sql.ResultSet rs = st.executeQuery();
             if (!rs.next()){
-                //Nothing returned from query
+                // Nothing returned from query
                 return null;
             } else {
                 String sessionData = rs.getString(1);
