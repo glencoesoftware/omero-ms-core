@@ -106,12 +106,8 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
         return connector;
     }
 
-    /**
-     * Retrieve the OMERO.web session's current
-     * <code>omeroweb.connector.Connector</code> synchronously.
-     * @param sessionKey Session key to retrieve a connector for.
-     * @return Connector instance or <code>null</code> if session lookup fails.
-     * @since 3.3
+    /* (non-Javadoc)
+     * @see com.glencoesoftware.omero.ms.core.OmeroWebSessionStore#getConnector(java.lang.String)
      */
     public IConnector getConnector(String sessionKey) {
         PreparedStatement st = null;
@@ -139,13 +135,8 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
         return null;
     }
 
-    /**
-     * Retrieve the OMERO.web session's current
-     * <code>omeroweb.connector.Connector</code>.
-     * @param sessionKey Session key to retrieve a connector for.
-     * @return A new {@link CompletionStage} that, when the {@link IConnector}
-     * retrieval is complete is executed.
-     * @since 3.3
+    /* (non-Javadoc)
+     * @see com.glencoesoftware.omero.ms.core.OmeroWebSessionStore#getConnectorAsync(java.lang.String)
      */
     public CompletionStage<IConnector> getConnectorAsync(String sessionKey) {
         CompletableFuture<IConnector> promise =
@@ -204,8 +195,8 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
         return promise;
     }
 
-    /**
-     * Close the connection
+    /* (non-Javadoc)
+     * @see java.io.Closeable#close()
      */
     public void close() throws IOException {
         try {
