@@ -19,13 +19,11 @@
 package com.glencoesoftware.omero.ms.core;
 
 import java.lang.RuntimeException;
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CompletableFuture;
 import java.util.List;
 import java.util.Base64;
-import java.util.Properties;
 
 import org.python.core.Py;
 import org.python.core.PyString;
@@ -39,13 +37,10 @@ import java.sql.*;
 import org.slf4j.LoggerFactory;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.Handler;
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLConnection;
-import io.vertx.ext.sql.ResultSet;
 
 
 /**
