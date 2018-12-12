@@ -19,6 +19,10 @@
 package com.glencoesoftware.omero.ms.core;
 
 import java.lang.RuntimeException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.io.IOException;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CompletableFuture;
@@ -31,8 +35,6 @@ import org.python.core.PyList;
 import org.python.core.PyDictionary;
 import org.python.core.util.StringUtil;
 import org.python.modules.cPickle;
-
-import java.sql.*;
 
 import org.slf4j.LoggerFactory;
 
