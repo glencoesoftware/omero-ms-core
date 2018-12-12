@@ -18,7 +18,6 @@
 
 package com.glencoesoftware.omero.ms.core;
 
-import java.lang.RuntimeException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -105,6 +104,9 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
      * @since 3.3
      */
     private IConnector getConnectorFromSessionData(String sessionData) {
+        if (sessionData == null) {
+            return null;
+        }
         String decodedSessionData =
             StringUtil.fromBytes(Base64.getDecoder().decode(sessionData));
         PyString pystring = Py.newString(decodedSessionData);
@@ -152,60 +154,35 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
      * @see com.glencoesoftware.omero.ms.core.OmeroWebSessionStore#getConnectorAsync(java.lang.String)
      */
     public CompletionStage<IConnector> getConnectorAsync(String sessionKey) {
-        CompletableFuture<IConnector> promise =
+        CompletableFuture<IConnector> future =
                 new CompletableFuture<IConnector>();
-        client.getConnection(conn -> {
-            if (conn.failed()) {
-                log.error(conn.cause().getMessage());
+        client.getConnection(result -> {
+            if (result.failed()) {
+                future.completeExceptionally(result.cause());
                 return;
             }
-            final SQLConnection connection = conn.result();
 
-            connection.queryWithParams(SELECT_SESSION_SQL,
-                new JsonArray().add(sessionKey), rs -> {
-                if (rs.failed()) {
-                    log.error("Cannot retrieve data from the database");
-                    rs.cause().printStackTrace();
-                    promise.complete(null);
-                    connection.close(done -> {
-                        if (done.failed()) {
-                            throw new RuntimeException(done.cause());
-                        }
-                    });
-                    return;
-                }
-
-                IConnector connector = null;
-                // Take the first result
-                List<JsonArray> results = rs.result().getResults();
-                if (!results.isEmpty()){
-                    JsonArray record = results.iterator().next();
-
-                    String sessionData = record.getString(0);
-                    if (sessionData == null) {
-                        promise.complete(null);
+            try (final SQLConnection connection = result.result()) {
+                connection.queryWithParams(SELECT_SESSION_SQL,
+                        new JsonArray().add(sessionKey), innerResult -> {
+                    if (innerResult.failed()) {
+                        future.completeExceptionally(innerResult.cause());
                         return;
                     }
-                    String decodedSessionData = StringUtil.fromBytes(
-                            Base64.getDecoder().decode(sessionData));
-                    PyString pystring = Py.newString(decodedSessionData);
-                    PyList hash_and_data = pystring.split(":", 1);
-                    PyString data_str =
-                            new PyString((String) hash_and_data.get(1));
-                    PyDictionary djangoSession =
-                        (PyDictionary) cPickle.loads(data_str);
-                    log.debug("Session: {}", djangoSession);
-                    connector = (IConnector) djangoSession.get("connector");
-                    promise.complete(connector);
-                }
-                connection.close(done -> {
-                    if (done.failed()) {
-                        throw new RuntimeException(done.cause());
+
+                    IConnector connector = null;
+                    List<JsonArray> results = innerResult.result().getResults();
+                    if (!results.isEmpty()){
+                        // Take the first column, first row
+                        JsonArray record = results.get(0);
+                        String sessionData = record.getString(0);
+                        connector = getConnectorFromSessionData(sessionData);
                     }
+                    future.complete(connector);
                 });
-            });
+            }
         });
-        return promise;
+        return future;
     }
 
     /* (non-Javadoc)
