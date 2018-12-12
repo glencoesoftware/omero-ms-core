@@ -68,12 +68,11 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
 
     /** Consturctor
     * @param url full database URL with connection parameters.
-      e.g. "jdbc:postgresql://localhost:5432/omero_database?user=fred&password=secret&ssl=true"
+    *   e.g. "jdbc:postgresql://localhost:5432/omero_database?user=fred&password=secret&ssl=true"
     * @param vertx the vertx instance for this verticle
     * @since 3.3
     */
-    public OmeroWebJDBCSessionStore(String url,
-        Vertx vertx) {
+    public OmeroWebJDBCSessionStore(String url, Vertx vertx) {
         client = JDBCClient.createShared(vertx, new JsonObject()
             .put("url", url)
             .put("driver_class", "org.postgresql.Driver")
@@ -122,8 +121,7 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
             if (!rs.next()){
                 //Nothing returned from query
                 return null;
-            }
-            else{
+            } else {
                 String sessionData = rs.getString(1);
                 return getConnectorFromSessionData(sessionData);
             }
@@ -137,7 +135,6 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
             }
         }
 
-        
         return null;
     }
 
@@ -173,7 +170,7 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
                 }
 
                 IConnector connector = null;
-                //Take the first result
+                // Take the first result
                 List<JsonArray> results = rs.result().getResults();
                 if (!results.isEmpty()){
                     JsonArray record = results.iterator().next();
