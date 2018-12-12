@@ -63,8 +63,11 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
     /** Vertx Async JDBC client */
     private JDBCClient client;
 
-    /** Synchronous JDBC connection  */
-    private Connection sync_connection;
+    /** Synchronous JDBC connection */
+    private Connection syncConnection;
+
+    /** Connection URL */
+    private final String url;
 
     /**
      * Constructor
@@ -74,16 +77,24 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
      * @since 3.3
      */
     public OmeroWebJDBCSessionStore(String url, Vertx vertx) {
+        this.url = url;
         client = JDBCClient.createShared(vertx, new JsonObject()
             .put("url", url)
             .put("driver_class", "org.postgresql.Driver")
             .put("max_pool_size", 30));
+    }
 
-        try {
-            sync_connection = DriverManager.getConnection(url);
-        } catch (SQLException e) {
-            throw new RuntimeException(e.toString());
+    /**
+     * Retrieves the current synchronous connection, creating it if it has not
+     * been initialized yet.
+     * @return Synchronous JDBC connection
+     * @throws SQLException If there is an error retrieving the connection.
+     */
+    private Connection getSyncConnection() throws SQLException {
+        if (syncConnection == null) {
+            syncConnection = DriverManager.getConnection(url);
         }
+        return syncConnection;
     }
 
     /**
@@ -112,7 +123,7 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
     public IConnector getConnector(String sessionKey) {
         PreparedStatement st = null;
         try {
-            st = sync_connection.prepareStatement(SELECT_SESSION_SQL);
+            st = getSyncConnection().prepareStatement(SELECT_SESSION_SQL);
             st.setString(1, sessionKey);
             java.sql.ResultSet rs = st.executeQuery();
             if (!rs.next()){
@@ -123,10 +134,12 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
                 return getConnectorFromSessionData(sessionData);
             }
         } catch (SQLException e) {
-            log.error("SQLException caught when trying to getConnector", e);
+            log.error("SQLException caught when trying to get connector", e);
         } finally {
             try {
-                st.close();
+                if (st != null) {
+                    st.close();
+                }
             } catch (SQLException e) {
                 log.error("Error closing JDBC statement", e);
             }
@@ -200,7 +213,9 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
      */
     public void close() throws IOException {
         try {
-            sync_connection.close();
+            if (syncConnection != null) {
+                syncConnection.close();
+            }
         } catch (SQLException e) {
             log.error("SQLException when closing connection.", e);
         }
