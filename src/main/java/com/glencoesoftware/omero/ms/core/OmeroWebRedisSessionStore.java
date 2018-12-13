@@ -109,7 +109,7 @@ public class OmeroWebRedisSessionStore implements OmeroWebSessionStore {
                 sessionKey);
         log.debug("Retrieving OMERO.web session with key: {}", key);
 
-        final StopWatch t0 = new Slf4JStopWatch("getConnector");
+        final StopWatch t0 = new Slf4JStopWatch("getConnectorAsync");
         // Binary retrieval, get(String) includes a UTF-8 step
         RedisFuture<byte[]> future = commands.get(key.getBytes());
         return future.<IConnector>thenApply(value -> {
