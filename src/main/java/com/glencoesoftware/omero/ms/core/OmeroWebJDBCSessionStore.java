@@ -28,6 +28,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.List;
 import java.util.Base64;
 
+import org.perf4j.StopWatch;
+import org.perf4j.slf4j.Slf4JStopWatch;
 import org.python.core.Py;
 import org.python.core.PyString;
 import org.python.core.PyList;
@@ -124,6 +126,7 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
      */
     public IConnector getConnector(String sessionKey) {
         PreparedStatement st = null;
+        final StopWatch t0 = new Slf4JStopWatch("getConnector");
         try {
             st = getSyncConnection().prepareStatement(SELECT_SESSION_SQL);
             st.setString(1, sessionKey);
@@ -138,6 +141,7 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
         } catch (SQLException e) {
             log.error("SQLException caught when trying to get connector", e);
         } finally {
+            t0.stop();
             try {
                 if (st != null) {
                     st.close();
@@ -156,8 +160,10 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
     public CompletionStage<IConnector> getConnectorAsync(String sessionKey) {
         CompletableFuture<IConnector> future =
                 new CompletableFuture<IConnector>();
+        final StopWatch t0 = new Slf4JStopWatch("getConnectorAsync");
         client.getConnection(result -> {
             if (result.failed()) {
+                t0.stop();
                 future.completeExceptionally(result.cause());
                 return;
             }
@@ -180,6 +186,8 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
                     }
                     future.complete(connector);
                 });
+            } finally {
+                t0.stop();
             }
         });
         return future;
