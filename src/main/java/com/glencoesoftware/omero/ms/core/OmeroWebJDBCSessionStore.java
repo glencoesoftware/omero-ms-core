@@ -126,7 +126,7 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
      */
     public IConnector getConnector(String sessionKey) {
         PreparedStatement st = null;
-        final StopWatch t0 = new Slf4JStopWatch("getConnectorAsync");
+        final StopWatch t0 = new Slf4JStopWatch("getConnector");
         try {
             st = getSyncConnection().prepareStatement(SELECT_SESSION_SQL);
             st.setString(1, sessionKey);
