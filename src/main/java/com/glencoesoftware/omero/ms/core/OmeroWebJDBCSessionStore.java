@@ -28,6 +28,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.List;
 import java.util.Base64;
 
+import org.perf4j.StopWatch;
+import org.perf4j.slf4j.Slf4JStopWatch;
 import org.python.core.Py;
 import org.python.core.PyString;
 import org.python.core.PyList;
@@ -156,8 +158,10 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
     public CompletionStage<IConnector> getConnectorAsync(String sessionKey) {
         CompletableFuture<IConnector> future =
                 new CompletableFuture<IConnector>();
+        final StopWatch t0 = new Slf4JStopWatch("getConnectorAsync");
         client.getConnection(result -> {
             if (result.failed()) {
+                t0.stop();
                 future.completeExceptionally(result.cause());
                 return;
             }
@@ -180,6 +184,8 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
                     }
                     future.complete(connector);
                 });
+            } finally {
+                t0.stop();
             }
         });
         return future;
