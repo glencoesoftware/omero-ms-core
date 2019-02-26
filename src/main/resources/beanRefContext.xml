@@ -17,7 +17,7 @@
     <property name="metrics" ref="metrics"/>
   </bean>
 
-  <bean id="omero-ms-backbone-verticlefactory"
+  <bean id="omero-ms-verticlefactory"
        class="com.glencoesoftware.omero.ms.core.OmeroVerticleFactory"/>
 
   <bean id="omero-ms-redis-cache-verticle"
