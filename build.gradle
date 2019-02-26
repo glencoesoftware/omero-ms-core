@@ -2,7 +2,6 @@ plugins {
     id 'eclipse'
     id 'java'
     id 'maven'
-    id 'maven-publish'
 }
 
 group = 'com.glencoesoftware.omero'
