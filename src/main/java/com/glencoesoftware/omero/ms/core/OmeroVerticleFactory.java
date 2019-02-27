@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Glencoe Software, Inc. All rights reserved.
+ * Copyright (C) 2019 Glencoe Software, Inc. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,29 +38,38 @@ public class OmeroVerticleFactory
 
     @Override
     public boolean blockingCreate() {
-      // Usually verticle instantiation is fast but since our verticles are
-      // Spring Beans, they might depend on other beans/resources which are
-      // slow to build/lookup.
-      return true;
+        // Usually verticle instantiation is fast but since our verticles are
+        // Spring Beans, they might depend on other beans/resources which are
+        // slow to build/lookup.
+        return true;
     }
 
+    /* (non-Javadoc)
+     * @see io.vertx.core.spi.VerticleFactory#prefix()
+     */
     @Override
     public String prefix() {
-      return "omero";
+        return "omero";
     }
 
+    /* (non-Javadoc)
+     * @see io.vertx.core.spi.VerticleFactory#createVerticle(java.lang.String, java.lang.ClassLoader)
+     */
     @Override
     public Verticle createVerticle(
             String verticleName, ClassLoader classLoader)
                     throws Exception {
-      return (Verticle) applicationContext.getBean(
-              VerticleFactory.removePrefix(verticleName));
+        return (Verticle) applicationContext.getBean(
+                VerticleFactory.removePrefix(verticleName));
     }
 
+    /* (non-Javadoc)
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     */
     @Override
     public void setApplicationContext(ApplicationContext applicationContext)
             throws BeansException {
-      this.applicationContext = applicationContext;
+        this.applicationContext = applicationContext;
     }
 
   }
