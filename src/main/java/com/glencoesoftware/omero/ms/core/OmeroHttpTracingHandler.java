@@ -2,59 +2,65 @@ package com.glencoesoftware.omero.ms.core;
 
 import java.util.List;
 
-import org.python.jline.internal.Log;
 import org.slf4j.LoggerFactory;
 
 import brave.ScopedSpan;
 import brave.Tracer;
 import brave.http.HttpTracing;
 import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
 
 public class OmeroHttpTracingHandler implements Handler<RoutingContext> {
 
-    final Tracer m_tracer;
-    List<String> m_tags;
-    
+    final Tracer tracer;
+    List<String> tags;
+
     public OmeroHttpTracingHandler(HttpTracing httpTracing, List<String> tags) {
-        m_tags = tags;
-        m_tracer = httpTracing.tracing().tracer();
+        this.tags = tags;
+        this.tracer = httpTracing.tracing().tracer();
     }
 
     @Override public void handle(RoutingContext context) {
-      ScopedSpan span = m_tracer.startScopedSpan("ms_span");
-      TracingEndHandler handler = new TracingEndHandler(context, span, m_tags);
+
+      ScopedSpan span = tracer.startScopedSpan("vertx.http_request");
+      HttpServerRequest request = context.request();
+      span.tag("http.method", request.rawMethod());
+      span.tag("http.path", request.path());
+      span.tag("http.params", request.params().toString());
+      TracingEndHandler handler = new TracingEndHandler(context, span, tags);
+      context.put(TracingEndHandler.class.getName(), handler);
       context.addHeadersEndHandler(handler);
       context.next();
     }
 }
 
 final class TracingEndHandler implements Handler<Void> {
-    
+
     private static final org.slf4j.Logger log =
         LoggerFactory.getLogger(TracingEndHandler.class);
-      
-    private ScopedSpan m_span;
-    private RoutingContext m_context;
-    private List<String> m_tags;
-  
+
+    private final ScopedSpan span;
+    private final RoutingContext context;
+    private final List<String> tags;
+
     TracingEndHandler(RoutingContext context, ScopedSpan span, List<String> tags){
-        m_context = context;
-        m_span = span;
-        m_tags = tags;
+        this.context = context;
+        this.span = span;
+        this.tags = tags;
   }
 
   @Override
   public void handle(Void event) {
-      for(String t : m_tags) {
+      for(String t : tags) {
           try {
-              m_span.tag(t, m_context.get(t));
+              span.tag(t, context.get(t));
           } catch(Exception e) {
               log.error("Failed to assign tag " + t);
               log.error(e.getMessage());
           }
       }
-      m_span.finish();
+      span.finish();
   }
 
 }
