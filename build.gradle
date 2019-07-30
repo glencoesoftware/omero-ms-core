@@ -12,7 +12,6 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 repositories {
-	mavenLocal()
     mavenCentral()
     maven {
         name 'Unidata'
@@ -101,14 +100,6 @@ test {
 uploadArchives {
     repositories {
         mavenDeployer {
-            repository(url: 'file://home/kevin/.m2/repository')
-        }
-    }
-}
-/*
-uploadArchives {
-    repositories {
-        mavenDeployer {
             repository(url: 'https://artifacts.glencoesoftware.com/artifactory/gs-omero-snapshots-local') {
                 authentication(
                     userName: project.properties.ArtifactoryUserName,
@@ -118,4 +109,3 @@ uploadArchives {
         }
     }
 }
-*/
