@@ -7,8 +7,12 @@ import brave.propagation.TraceContext.Injector;
 
 public class OmeroVertxInjectorFactory {
 
-    static Injector<Map<String, String>> getInjector() {
-        return Tracing.current().propagation()
+    public static Injector<Map<String, String>> getInjector() {
+        Tracing tracing = Tracing.current();
+        if (tracing == null) {
+            return null;
+        }
+        return tracing.propagation()
                 .injector((carrier, key, value) -> {
             carrier.put(key, value);
         }

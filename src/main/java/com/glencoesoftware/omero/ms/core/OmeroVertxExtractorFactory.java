@@ -7,8 +7,12 @@ import brave.propagation.TraceContext.Extractor;
 
 public class OmeroVertxExtractorFactory {
 
-    static Extractor<Map<String, String>> getExtractor(){
-        return Tracing.current().propagation()
+    public static Extractor<Map<String, String>> getExtractor(){
+        Tracing tracing = Tracing.current();
+        if (tracing == null) {
+            return null;
+        }
+        return tracing.propagation()
                 .extractor((carrier, key) -> {
                     return carrier.get(key);
                 });
