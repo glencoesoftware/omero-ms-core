@@ -18,6 +18,14 @@
 
 package com.glencoesoftware.omero.ms.core;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.python.jline.internal.Log;
+
+import brave.Tracing;
+import brave.propagation.TraceContext.Injector;
+
 /**
  * A context object which is designed to be subclassed and passed as a
  * serialized message through the Vert.x {@link io.vertx.core.eventbus.EventBus}
@@ -29,5 +37,26 @@ public abstract class OmeroRequestCtx {
 
     /** OMERO session key. */
     public String omeroSessionKey;
+
+    /** Current trace context to be propagated */
+    public Map<String, String> traceContext = new HashMap<String, String>();
+
+    /**
+     * Constructor. If using brave tracing, inject the tracing context
+     * into the OmeroRequestCtx traceContext.
+     */
+    public OmeroRequestCtx() {
+        Tracing tracing = Tracing.current();
+        if (tracing == null) {
+            return;
+        }
+        Injector<Map<String, String>> injector =
+            tracing.propagation().injector((carrier, key, value) -> {
+                carrier.put(key, value);
+            }
+        );
+        injector.inject(
+            Tracing.currentTracer().currentSpan().context(), traceContext);
+    }
 
 }
