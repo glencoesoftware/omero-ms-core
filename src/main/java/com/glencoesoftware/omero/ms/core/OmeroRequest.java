@@ -19,13 +19,12 @@
 package com.glencoesoftware.omero.ms.core;
 
 import java.io.Closeable;
-
-import org.perf4j.StopWatch;
-import org.perf4j.slf4j.Slf4JStopWatch;
 import org.slf4j.LoggerFactory;
 
 import Glacier2.CannotCreateSessionException;
 import Glacier2.PermissionDeniedException;
+import brave.ScopedSpan;
+import brave.Tracing;
 import omero.ServerError;
 
 
@@ -69,12 +68,13 @@ public class OmeroRequest implements Closeable {
                 host, port, omeroSessionKey);
         this.omeroSessionKey = omeroSessionKey;
         this.client = new omero.client(host, port);
-        StopWatch t0 = new Slf4JStopWatch("joinSession");
+        ScopedSpan span = Tracing.currentTracer().startScopedSpan("join_omero_session");
+        span.tag("omero_session_key", omeroSessionKey);
         try {
             client.joinSession(omeroSessionKey).detachOnDestroy();
             log.debug("Successfully joined session: {}", omeroSessionKey);
         } finally {
-            t0.stop();
+            span.finish();
         }
     }
 
@@ -96,14 +96,15 @@ public class OmeroRequest implements Closeable {
      */
     @Override
     public void close() {
-        StopWatch t0 = new Slf4JStopWatch("closeSession");
+        ScopedSpan span = Tracing.currentTracer().startScopedSpan("close_omero_session");
+        span.tag("session_id", client.getSessionId());
         try {
             client.closeSession();
             log.debug("Successfully closed session: {}", omeroSessionKey);
         } catch (Exception e) {
             log.error("Exception while closing session: {}", omeroSessionKey);
         } finally {
-            t0.stop();
+            span.finish();
         }
     }
 
