@@ -47,7 +47,7 @@ public class OmeroHttpTracingHandler implements Handler<RoutingContext> {
      * A list of keys to pull from the {@link RequestContext}
      * and assign as tags to the span
      */
-    List<String> tags;
+    final List<String> tags;
 
     /**
      * Constructor.
