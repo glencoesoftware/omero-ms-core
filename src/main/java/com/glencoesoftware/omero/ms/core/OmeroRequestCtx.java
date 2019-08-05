@@ -21,8 +21,6 @@ package com.glencoesoftware.omero.ms.core;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.python.jline.internal.Log;
-
 import brave.Tracing;
 import brave.propagation.TraceContext.Injector;
 
@@ -43,7 +41,7 @@ public abstract class OmeroRequestCtx {
 
     /**
      * Constructor. If using brave tracing, inject the tracing context
-     * into the OmeroRequestCtx traceContext.
+     * into the <code>traceContext</code>.
      */
     public OmeroRequestCtx() {
         Tracing tracing = Tracing.current();
