@@ -76,7 +76,7 @@ public class OmeroWebRedisSessionStore implements OmeroWebSessionStore {
     @Override
     public IConnector getConnector(String sessionKey) {
         ScopedSpan span = Tracing.currentTracer().startScopedSpan("get_connector_redis");
-        span.tag("session_key", sessionKey);
+        span.tag("omero_web.session_key", sessionKey);
         try {
             byte[] pickledDjangoSession = null;
             RedisCommands<byte[], byte[]> commands = connection.sync();
@@ -114,7 +114,7 @@ public class OmeroWebRedisSessionStore implements OmeroWebSessionStore {
         log.debug("Retrieving OMERO.web session with key: {}", key);
 
         ScopedSpan span = Tracing.currentTracer().startScopedSpan("get_connector_async");
-        span.tag("session_key", sessionKey);
+        span.tag("omero_web.session_key", sessionKey);
         // Binary retrieval, get(String) includes a UTF-8 step
         RedisFuture<byte[]> future = commands.get(key.getBytes());
         return future.<IConnector>thenApply(value -> {
