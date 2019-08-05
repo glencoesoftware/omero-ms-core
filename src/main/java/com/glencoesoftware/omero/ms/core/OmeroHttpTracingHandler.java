@@ -65,7 +65,6 @@ public class OmeroHttpTracingHandler implements Handler<RoutingContext> {
      */
     @Override
     public void handle(RoutingContext context) {
-
       ScopedSpan span = tracer.startScopedSpan("vertx.http_request");
       HttpServerRequest request = context.request();
       span.tag("http.method", request.rawMethod());
