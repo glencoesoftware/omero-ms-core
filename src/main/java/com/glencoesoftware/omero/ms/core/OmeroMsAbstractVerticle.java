@@ -32,8 +32,10 @@ import io.vertx.core.AbstractVerticle;
  */
 public abstract class OmeroMsAbstractVerticle extends AbstractVerticle {
 
-    /** Extracts trace information from a Map<String, String>
-     * and uses it to rehydrate a TracingContext*/
+    /**
+     * Extracts trace information from a <code>Map&lt;String, String&gt;</code>
+     * and uses it to rehydrate a {@link brave.propagation.TraceContext}
+     */
     protected Extractor<Map<String, String>> extractor;
 
     /**
