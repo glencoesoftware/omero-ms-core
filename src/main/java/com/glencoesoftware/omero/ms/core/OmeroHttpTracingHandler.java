@@ -122,8 +122,7 @@ final class TracingEndHandler implements Handler<Void> {
                 try {
                     span.tag(t, context.get(t));
                 } catch(Exception e) {
-                    log.error("Failed to assign tag " + t);
-                    log.error(e.getMessage());
+                    log.error("Failed to assign tag " + t, e);
                 }
             }
         }
