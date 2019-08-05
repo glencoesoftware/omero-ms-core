@@ -127,7 +127,7 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
     @Override
     public IConnector getConnector(String sessionKey) {
         PreparedStatement st = null;
-        ScopedSpan span = Tracing.currentTracer().startScopedSpan("get_connector");
+        ScopedSpan span = Tracing.currentTracer().startScopedSpan("get_connector_jdbc");
         span.tag("omero_web.session_key", sessionKey);
         try {
             st = getSyncConnection().prepareStatement(SELECT_SESSION_SQL);
@@ -163,7 +163,7 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
     public CompletionStage<IConnector> getConnectorAsync(String sessionKey) {
         CompletableFuture<IConnector> future =
                 new CompletableFuture<IConnector>();
-        ScopedSpan span = Tracing.currentTracer().startScopedSpan("get_connector_async");
+        ScopedSpan span = Tracing.currentTracer().startScopedSpan("get_connector_jdbc_async");
         span.tag("omero_web.session_key", sessionKey);
         client.getConnection(result -> {
             if (result.failed()) {

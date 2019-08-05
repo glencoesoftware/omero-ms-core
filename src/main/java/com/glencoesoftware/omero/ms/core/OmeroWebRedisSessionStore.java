@@ -113,7 +113,7 @@ public class OmeroWebRedisSessionStore implements OmeroWebSessionStore {
                 sessionKey);
         log.debug("Retrieving OMERO.web session with key: {}", key);
 
-        ScopedSpan span = Tracing.currentTracer().startScopedSpan("get_connector_async");
+        ScopedSpan span = Tracing.currentTracer().startScopedSpan("get_connector_redis_async");
         span.tag("omero_web.session_key", sessionKey);
         // Binary retrieval, get(String) includes a UTF-8 step
         RedisFuture<byte[]> future = commands.get(key.getBytes());
