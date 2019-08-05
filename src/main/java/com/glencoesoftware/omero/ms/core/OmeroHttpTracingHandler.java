@@ -117,12 +117,14 @@ final class TracingEndHandler implements Handler<Void> {
      */
     @Override
     public void handle(Void event) {
-        for(String t : tags) {
-            try {
-                span.tag(t, context.get(t));
-            } catch(Exception e) {
-                log.error("Failed to assign tag " + t);
-                log.error(e.getMessage());
+        if (tags != null) {
+            for (String t : tags) {
+                try {
+                    span.tag(t, context.get(t));
+                } catch(Exception e) {
+                    log.error("Failed to assign tag " + t);
+                    log.error(e.getMessage());
+                }
             }
         }
         span.finish();
