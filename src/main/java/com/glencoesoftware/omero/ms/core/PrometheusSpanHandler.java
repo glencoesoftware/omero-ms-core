@@ -38,12 +38,14 @@ public class PrometheusSpanHandler extends FinishedSpanHandler {
     private static final org.slf4j.Logger log =
             LoggerFactory.getLogger(PrometheusSpanHandler.class);
 
-    /** The Prometheus Summary which will be used to
+    /**
+     * The Prometheus Summary which will be used to
      * record the duration of the spans
      */
     private Summary spanDuration;
 
-    /** Default constructor. Sets up the Prometheus Summary
+    /**
+     * Default constructor. Sets up the Prometheus Summary
      * to record the span durations by span name.
      * Spans recording the same operation should have the same name.
      */
