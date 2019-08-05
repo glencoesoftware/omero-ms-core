@@ -97,7 +97,6 @@ public class OmeroRequest implements Closeable {
     @Override
     public void close() {
         ScopedSpan span = Tracing.currentTracer().startScopedSpan("close_omero_session");
-        span.tag("session_id", client.getSessionId());
         try {
             client.closeSession();
             log.debug("Successfully closed session: {}", omeroSessionKey);
