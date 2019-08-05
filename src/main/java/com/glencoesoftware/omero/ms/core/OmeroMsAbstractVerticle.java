@@ -39,18 +39,20 @@ public abstract class OmeroMsAbstractVerticle extends AbstractVerticle {
     protected Extractor<Map<String, String>> extractor;
 
     /**
-     * Constructor. Sets up the tracing extractor if
+     * Retrieves the current tracing extractor if
      * tracing is being used in this microservice.
+     * @return current extractor or <code>null</code> if tracing is not
+     * enabled
      */
-    public OmeroMsAbstractVerticle() {
+    protected Extractor<Map<String, String>> extractor() {
         Tracing tracing = Tracing.current();
         if (tracing == null) {
-            return;
+            return null;
         }
-        this.extractor = tracing.propagation()
-                .extractor((carrier, key) -> {
-                    return carrier.get(key);
-                });
+        return tracing.propagation()
+            .extractor((carrier, key) -> {
+                return carrier.get(key);
+            });
     }
 
 }
