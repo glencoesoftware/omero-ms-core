@@ -37,20 +37,22 @@ import io.vertx.ext.web.RoutingContext;
  */
 public class OmeroHttpTracingHandler implements Handler<RoutingContext> {
 
-    /** The tracer associtated with the Tracing object
+    /**
+     * The tracer associtated with the Tracing object
      * configured in the verticle.
      */
     final Tracer tracer;
 
-    /** A list of keys to pull from the RequestContext
+    /**
+     * A list of keys to pull from the {@link RequestContext}
      * and assign as tags to the span
      */
     List<String> tags;
 
     /**
      * Constructor.
-     * @param httpTracing Configured brave HttpTracing
-     * @param tags Keys to be retrieved from the RoutingContext
+     * @param httpTracing Configured brave {@link HttpTracing}
+     * @param tags Keys to be retrieved from the {@link RoutingContext}
      * and assigned as tags to the span.
      */
     public OmeroHttpTracingHandler(HttpTracing httpTracing, List<String> tags) {
@@ -84,24 +86,24 @@ public class OmeroHttpTracingHandler implements Handler<RoutingContext> {
  */
 final class TracingEndHandler implements Handler<Void> {
 
-    /**For logging*/
+    /** For logging */
     private static final org.slf4j.Logger log =
         LoggerFactory.getLogger(TracingEndHandler.class);
 
-    /**The span to be finished*/
+    /** The span to be finished */
     private final ScopedSpan span;
 
-    /** The routing context of the request being traced*/
+    /** The routing context of the request being traced */
     private final RoutingContext context;
 
-    /** Keys in the RoutingContext to be pulled as span tags*/
+    /** Keys in the {@link RoutingContext} to be pulled as span tags */
     private final List<String> tags;
 
     /**
      * Constructor.
-     * @param httpTracing Configured brave HttpTracing
+     * @param httpTracing Configured brave {@link HttpTracing}
      * @param span The span to tag and finish
-     * @param tags Keys to be retrieved from the RoutingContext
+     * @param tags Keys to be retrieved from the {@link RoutingContext}
      * and assigned as tags to the span.
      */
     TracingEndHandler(RoutingContext context, ScopedSpan span, List<String> tags){
