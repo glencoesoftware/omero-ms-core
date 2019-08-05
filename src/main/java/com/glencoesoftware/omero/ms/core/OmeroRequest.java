@@ -69,7 +69,7 @@ public class OmeroRequest implements Closeable {
         this.omeroSessionKey = omeroSessionKey;
         this.client = new omero.client(host, port);
         ScopedSpan span = Tracing.currentTracer().startScopedSpan("join_omero_session");
-        span.tag("omero_session_key", omeroSessionKey);
+        span.tag("omero.session_key", omeroSessionKey);
         try {
             client.joinSession(omeroSessionKey).detachOnDestroy();
             log.debug("Successfully joined session: {}", omeroSessionKey);
