@@ -64,8 +64,6 @@ public class PrometheusSpanHandler extends FinishedSpanHandler {
     @Override
     public boolean handle(TraceContext context, MutableSpan span) {
         spanDuration.labels(span.name()).observe(span.finishTimestamp() - span.startTimestamp());
-        log.info(span.name());
-        log.info("In FinishedSpanHandler");
         return true;
     }
 
