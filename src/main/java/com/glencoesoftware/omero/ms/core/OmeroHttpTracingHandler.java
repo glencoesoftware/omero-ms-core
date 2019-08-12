@@ -37,6 +37,10 @@ import io.vertx.ext.web.RoutingContext;
  */
 public class OmeroHttpTracingHandler implements Handler<RoutingContext> {
 
+    /** For logging */
+    private static final org.slf4j.Logger log =
+        LoggerFactory.getLogger(TracingEndHandler.class);
+
     /**
      * The tracer associtated with the Tracing object
      * configured in the verticle.
@@ -67,15 +71,15 @@ public class OmeroHttpTracingHandler implements Handler<RoutingContext> {
      */
     @Override
     public void handle(RoutingContext context) {
-      ScopedSpan span = tracer.startScopedSpan("vertx.http_request");
-      HttpServerRequest request = context.request();
-      span.tag("http.method", request.rawMethod());
-      span.tag("http.path", request.path());
-      span.tag("http.params", request.params().toString());
-      TracingEndHandler handler = new TracingEndHandler(context, span, tags);
-      context.put(TracingEndHandler.class.getName(), handler);
-      context.addHeadersEndHandler(handler);
-      context.next();
+        ScopedSpan span = tracer.startScopedSpan("vertx.http_request");
+        HttpServerRequest request = context.request();
+        span.tag("http.method", request.rawMethod());
+        span.tag("http.path", request.path());
+        span.tag("http.params", request.params().toString());
+        TracingEndHandler handler = new TracingEndHandler(context, span, tags);
+        context.put(TracingEndHandler.class.getName(), handler);
+        context.addHeadersEndHandler(handler);
+        context.next();
     }
 }
 
