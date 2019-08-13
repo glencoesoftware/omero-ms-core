@@ -44,6 +44,10 @@ public abstract class OmeroRequestCtx {
      * into the <code>traceContext</code>.
      */
     public OmeroRequestCtx() {
+
+    }
+
+    public void injectCurrentTraceContext() {
         Tracing tracing = Tracing.current();
         if (tracing == null) {
             return;
