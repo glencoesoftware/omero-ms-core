@@ -33,12 +33,6 @@ import io.vertx.core.AbstractVerticle;
 public abstract class OmeroMsAbstractVerticle extends AbstractVerticle {
 
     /**
-     * Extracts trace information from a <code>Map&lt;String, String&gt;</code>
-     * and uses it to rehydrate a {@link brave.propagation.TraceContext}
-     */
-    protected Extractor<Map<String, String>> extractor;
-
-    /**
      * Retrieves the current tracing extractor if
      * tracing is being used in this microservice.
      * @return current extractor or <code>null</code> if tracing is not

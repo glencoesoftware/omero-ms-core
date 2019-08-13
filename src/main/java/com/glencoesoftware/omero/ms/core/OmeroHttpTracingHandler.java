@@ -37,10 +37,6 @@ import io.vertx.ext.web.RoutingContext;
  */
 public class OmeroHttpTracingHandler implements Handler<RoutingContext> {
 
-    /** For logging */
-    private static final org.slf4j.Logger log =
-        LoggerFactory.getLogger(TracingEndHandler.class);
-
     /**
      * The tracer associtated with the Tracing object
      * configured in the verticle.
