@@ -28,8 +28,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.List;
 import java.util.Base64;
 
-import org.perf4j.StopWatch;
-import org.perf4j.slf4j.Slf4JStopWatch;
 import org.python.core.Py;
 import org.python.core.PyString;
 import org.python.core.PyList;
@@ -39,6 +37,8 @@ import org.python.modules.cPickle;
 
 import org.slf4j.LoggerFactory;
 
+import brave.ScopedSpan;
+import brave.Tracing;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -124,9 +124,11 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
     /* (non-Javadoc)
      * @see com.glencoesoftware.omero.ms.core.OmeroWebSessionStore#getConnector(java.lang.String)
      */
+    @Override
     public IConnector getConnector(String sessionKey) {
         PreparedStatement st = null;
-        final StopWatch t0 = new Slf4JStopWatch("getConnector");
+        ScopedSpan span = Tracing.currentTracer().startScopedSpan("get_connector_jdbc");
+        span.tag("omero_web.session_key", sessionKey);
         try {
             st = getSyncConnection().prepareStatement(SELECT_SESSION_SQL);
             st.setString(1, sessionKey);
@@ -141,7 +143,7 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
         } catch (SQLException e) {
             log.error("SQLException caught when trying to get connector", e);
         } finally {
-            t0.stop();
+            span.finish();
             try {
                 if (st != null) {
                     st.close();
@@ -157,13 +159,15 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
     /* (non-Javadoc)
      * @see com.glencoesoftware.omero.ms.core.OmeroWebSessionStore#getConnectorAsync(java.lang.String)
      */
+    @Override
     public CompletionStage<IConnector> getConnectorAsync(String sessionKey) {
         CompletableFuture<IConnector> future =
                 new CompletableFuture<IConnector>();
-        final StopWatch t0 = new Slf4JStopWatch("getConnectorAsync");
+        ScopedSpan span = Tracing.currentTracer().startScopedSpan("get_connector_jdbc_async");
+        span.tag("omero_web.session_key", sessionKey);
         client.getConnection(result -> {
             if (result.failed()) {
-                t0.stop();
+                span.finish();
                 future.completeExceptionally(result.cause());
                 return;
             }
@@ -187,7 +191,7 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
                     future.complete(connector);
                 });
             } finally {
-                t0.stop();
+                span.finish();
             }
         });
         return future;
@@ -196,6 +200,7 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
     /* (non-Javadoc)
      * @see java.io.Closeable#close()
      */
+    @Override
     public void close() throws IOException {
         try {
             client.close();

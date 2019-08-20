@@ -21,8 +21,6 @@ package com.glencoesoftware.omero.ms.core;
 import java.io.IOException;
 import java.util.concurrent.CompletionStage;
 
-import org.perf4j.StopWatch;
-import org.perf4j.slf4j.Slf4JStopWatch;
 import org.python.core.Py;
 import org.python.core.PyDictionary;
 import org.python.core.util.StringUtil;
@@ -36,10 +34,13 @@ import com.lambdaworks.redis.api.async.RedisAsyncCommands;
 import com.lambdaworks.redis.api.sync.RedisCommands;
 import com.lambdaworks.redis.codec.ByteArrayCodec;
 
+import brave.ScopedSpan;
+import brave.Tracing;
+
 /**
  * A Redis backed OMERO.web session store. Based on a provided session key,
  * retrieves the Python pickled session and then utilizes Jython to unpickle
- * the current OMERO.web connector. 
+ * the current OMERO.web connector.
  * @author Chris Allan <callan@glencoesoftware.com>
  *
  */
@@ -72,8 +73,10 @@ public class OmeroWebRedisSessionStore implements OmeroWebSessionStore {
     /* (non-Javadoc)
      * @see com.glencoesoftware.omero.ms.core.OmeroWebSessionStore#getConnector(java.lang.String)
      */
+    @Override
     public IConnector getConnector(String sessionKey) {
-        StopWatch t0 = new Slf4JStopWatch("getConnector");
+        ScopedSpan span = Tracing.currentTracer().startScopedSpan("get_connector_redis");
+        span.tag("omero_web.session_key", sessionKey);
         try {
             byte[] pickledDjangoSession = null;
             RedisCommands<byte[], byte[]> commands = connection.sync();
@@ -93,13 +96,14 @@ public class OmeroWebRedisSessionStore implements OmeroWebSessionStore {
             log.debug("Session: {}", djangoSession);
             return (IConnector) djangoSession.get("connector");
         } finally {
-            t0.stop();
+            span.finish();
         }
     }
 
     /* (non-Javadoc)
      * @see com.glencoesoftware.omero.ms.core.OmeroWebSessionStore#getConnectorAsync(java.lang.String, com.glencoesoftware.omero.ms.core.ConnectorHandler)
      */
+    @Override
     public CompletionStage<IConnector> getConnectorAsync(String sessionKey) {
         RedisAsyncCommands<byte[], byte[]> commands = connection.async();
         String key = String.format(
@@ -109,7 +113,8 @@ public class OmeroWebRedisSessionStore implements OmeroWebSessionStore {
                 sessionKey);
         log.debug("Retrieving OMERO.web session with key: {}", key);
 
-        final StopWatch t0 = new Slf4JStopWatch("getConnectorAsync");
+        ScopedSpan span = Tracing.currentTracer().startScopedSpan("get_connector_redis_async");
+        span.tag("omero_web.session_key", sessionKey);
         // Binary retrieval, get(String) includes a UTF-8 step
         RedisFuture<byte[]> future = commands.get(key.getBytes());
         return future.<IConnector>thenApply(value -> {
@@ -123,7 +128,7 @@ public class OmeroWebRedisSessionStore implements OmeroWebSessionStore {
             } catch (Exception e) {
                 log.error("Exception while unpickling connector", e);
             } finally {
-                t0.stop();
+                span.finish();
             }
             return null;
         });
