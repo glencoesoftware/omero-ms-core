@@ -18,13 +18,16 @@
 
 package com.glencoesoftware.omero.ms.core;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.LoggerFactory;
 
-import brave.ScopedSpan;
+import brave.Span;
 import brave.Tracer;
 import brave.http.HttpTracing;
+import brave.propagation.TraceContext.Injector;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
@@ -50,6 +53,11 @@ public class OmeroHttpTracingHandler implements Handler<RoutingContext> {
     final List<String> tags;
 
     /**
+     * Injector for putting the TracingContext into the RoutingContext
+     */
+    Injector<Map<String, String>> injector;
+
+    /**
      * Constructor.
      * @param httpTracing Configured brave {@link HttpTracing}
      * @param tags Keys to be retrieved from the {@link RoutingContext}
@@ -58,6 +66,14 @@ public class OmeroHttpTracingHandler implements Handler<RoutingContext> {
     public OmeroHttpTracingHandler(HttpTracing httpTracing, List<String> tags) {
         this.tags = tags;
         this.tracer = httpTracing.tracing().tracer();
+        injector =
+                httpTracing
+                    .tracing()
+                    .propagation()
+                    .injector((carrier, key, value) -> {
+                    carrier.put(key, value);
+                }
+            );
     }
 
     /**
@@ -67,13 +83,17 @@ public class OmeroHttpTracingHandler implements Handler<RoutingContext> {
      */
     @Override
     public void handle(RoutingContext context) {
-        ScopedSpan span = tracer.startScopedSpan("vertx.http_request");
+        Span span = tracer.newTrace().name("vertx.http_request");
         HttpServerRequest request = context.request();
         span.tag("http.method", request.rawMethod());
         span.tag("http.path", request.path());
         span.tag("http.params", request.params().toString());
+        Map<String, String> traceContext = new HashMap<String, String>();
+        injector.inject(
+            span.context(), traceContext);
         TracingEndHandler handler = new TracingEndHandler(context, span, tags);
         context.put(TracingEndHandler.class.getName(), handler);
+        context.put("traceContext", traceContext);
         context.addHeadersEndHandler(handler);
         context.next();
     }
@@ -91,7 +111,7 @@ final class TracingEndHandler implements Handler<Void> {
         LoggerFactory.getLogger(TracingEndHandler.class);
 
     /** The span to be finished */
-    private final ScopedSpan span;
+    private final Span span;
 
     /** The routing context of the request being traced */
     private final RoutingContext context;
@@ -106,7 +126,7 @@ final class TracingEndHandler implements Handler<Void> {
      * @param tags Keys to be retrieved from the {@link RoutingContext}
      * and assigned as tags to the span.
      */
-    TracingEndHandler(RoutingContext context, ScopedSpan span, List<String> tags){
+    TracingEndHandler(RoutingContext context, Span span, List<String> tags){
         this.context = context;
         this.span = span;
         this.tags = tags;
