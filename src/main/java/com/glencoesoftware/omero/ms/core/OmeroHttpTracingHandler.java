@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import brave.Span;
 import brave.Tracer;
+import brave.Tracer.SpanInScope;
 import brave.http.HttpTracing;
 import brave.propagation.TraceContext;
 import brave.propagation.TraceContext.Extractor;
@@ -120,7 +121,9 @@ public class OmeroHttpTracingHandler implements Handler<RoutingContext> {
         context.put(TracingEndHandler.class.getName(), handler);
         context.put("traceContext", traceContextMap);
         context.addHeadersEndHandler(handler);
-        context.next();
+        try (SpanInScope ws = tracer.withSpanInScope(span)){
+            context.next();
+        }
     }
 }
 
