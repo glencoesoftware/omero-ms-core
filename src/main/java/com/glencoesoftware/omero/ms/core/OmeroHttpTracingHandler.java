@@ -27,6 +27,8 @@ import org.slf4j.LoggerFactory;
 import brave.Span;
 import brave.Tracer;
 import brave.http.HttpTracing;
+import brave.propagation.TraceContext;
+import brave.propagation.TraceContext.Extractor;
 import brave.propagation.TraceContext.Injector;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
@@ -39,6 +41,9 @@ import io.vertx.ext.web.RoutingContext;
  *
  */
 public class OmeroHttpTracingHandler implements Handler<RoutingContext> {
+
+    private static final org.slf4j.Logger log =
+            LoggerFactory.getLogger(OmeroHttpTracingHandler.class);
 
     /**
      * The tracer associtated with the Tracing object
@@ -58,6 +63,11 @@ public class OmeroHttpTracingHandler implements Handler<RoutingContext> {
     Injector<Map<String, String>> injector;
 
     /**
+     * Extractor for getting trace info from request headers
+     */
+    final Extractor<HttpServerRequest> extractor;
+
+    /**
      * Constructor.
      * @param httpTracing Configured brave {@link HttpTracing}
      * @param tags Keys to be retrieved from the {@link RoutingContext}
@@ -74,6 +84,12 @@ public class OmeroHttpTracingHandler implements Handler<RoutingContext> {
                     carrier.put(key, value);
                 }
             );
+        extractor = httpTracing
+                        .tracing()
+                        .propagation()
+                        .extractor((carrier, key) -> {
+                            return carrier.getHeader(key);
+                        });
     }
 
     /**
@@ -83,17 +99,26 @@ public class OmeroHttpTracingHandler implements Handler<RoutingContext> {
      */
     @Override
     public void handle(RoutingContext context) {
-        Span span = tracer.newTrace().name("vertx.http_request");
         HttpServerRequest request = context.request();
+        Span span = null;
+        //Check for tracing context in the request
+        TraceContext traceContext = extractor.extract(request).context();
+        if(traceContext != null) {
+            span = tracer.newChild(traceContext).name("vertx.http_request");
+        } else {
+            span = tracer.newTrace().name("vertx.http_request");
+        }
+        log.info(span.context().toString());
+        span.start();
         span.tag("http.method", request.rawMethod());
         span.tag("http.path", request.path());
         span.tag("http.params", request.params().toString());
-        Map<String, String> traceContext = new HashMap<String, String>();
+        Map<String, String> traceContextMap = new HashMap<String, String>();
         injector.inject(
-            span.context(), traceContext);
+            span.context(), traceContextMap);
         TracingEndHandler handler = new TracingEndHandler(context, span, tags);
         context.put(TracingEndHandler.class.getName(), handler);
-        context.put("traceContext", traceContext);
+        context.put("traceContext", traceContextMap);
         context.addHeadersEndHandler(handler);
         context.next();
     }
