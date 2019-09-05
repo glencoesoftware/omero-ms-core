@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import brave.Tracing;
+import brave.propagation.Propagation.Setter;
 import brave.propagation.TraceContext.Injector;
 
 /**
@@ -39,26 +40,24 @@ public abstract class OmeroRequestCtx {
     /** Current trace context to be propagated */
     public Map<String, String> traceContext = new HashMap<String, String>();
 
+    /** Setter which will be used during <code>traceContext</code> injection */
+    static final Setter<Map<String, String>, String> SETTER =
+            (carrier, key, value) -> {
+                carrier.put(key, value);
+            };
+
     /**
-     * Constructor. If using brave tracing, inject the tracing context
+     * If using brave tracing, inject the tracing context
      * into the <code>traceContext</code>.
      */
-    public OmeroRequestCtx() {
-
-    }
-
     public void injectCurrentTraceContext() {
         Tracing tracing = Tracing.current();
         if (tracing == null) {
             return;
         }
         Injector<Map<String, String>> injector =
-            tracing.propagation().injector((carrier, key, value) -> {
-                carrier.put(key, value);
-            }
-        );
+                tracing.propagation().injector(SETTER);
         injector.inject(
-            Tracing.currentTracer().currentSpan().context(), traceContext);
+                Tracing.currentTracer().currentSpan().context(), traceContext);
     }
-
 }
