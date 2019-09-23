@@ -52,7 +52,7 @@ public class PrometheusSpanHandler extends FinishedSpanHandler {
     public PrometheusSpanHandler() {
         spanDuration = Summary.build()
                 .name("spanDuration")
-                .labelNames("spanName")
+                .labelNames("spanName", "error")
                 .help("The duration of spans")
                 .register();
     }
@@ -63,7 +63,11 @@ public class PrometheusSpanHandler extends FinishedSpanHandler {
      */
     @Override
     public boolean handle(TraceContext context, MutableSpan span) {
-        spanDuration.labels(span.name()).observe(
+        String errorVal = "";
+        if (span.tag("error") != null) {
+            errorVal = span.tag("error");
+        }
+        spanDuration.labels(span.name(), errorVal).observe(
                 (span.finishTimestamp() - span.startTimestamp())/1000);
         return true;
     }
