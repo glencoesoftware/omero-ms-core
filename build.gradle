@@ -82,10 +82,10 @@ dependencies {
     compile 'io.zipkin.brave:brave-instrumentation-http:5.6.8'
     compile 'io.zipkin.reporter2:zipkin-sender-okhttp3:2.10.0'
     compile 'biz.paluch.redis:lettuce:4.3.2.Final'
-    compile 'io.vertx:vertx-web:3.5.3'
     compile 'omero:blitz:5.4.10-ice36-b105'
     compile 'org.python:jython-standalone:2.7.0'
-    compile 'io.vertx:vertx-jdbc-client:3.5.3'
+    compile 'io.vertx:vertx-web:3.6.3'
+    compile 'io.vertx:vertx-jdbc-client:3.6.3'
 
     testCompile 'org.testng:testng:6.10'
 }
