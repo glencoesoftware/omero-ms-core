@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import io.vertx.core.Vertx;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.Cookie;
+import io.vertx.core.http.Cookie;
 import io.vertx.ext.web.RoutingContext;
 
 /**
