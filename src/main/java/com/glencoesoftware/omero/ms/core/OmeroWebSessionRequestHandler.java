@@ -20,7 +20,6 @@ package com.glencoesoftware.omero.ms.core;
 
 import org.slf4j.LoggerFactory;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.http.Cookie;
@@ -42,22 +41,14 @@ public class OmeroWebSessionRequestHandler implements Handler<RoutingContext>{
     /** Microservice wide configuration. */
     private final JsonObject config;
 
-    /** Vertx instance */
-    private final Vertx vertx;
-
-    private final String handlerSynchronicity;
-
     /**
      * Default constructor.
      * @param config Microservice wide configuration.
      * @param sessionStore OMERO.web session store implementation.
      */
     public OmeroWebSessionRequestHandler(
-            JsonObject config, OmeroWebSessionStore sessionStore, Vertx vertx) {
+            JsonObject config, OmeroWebSessionStore sessionStore) {
         this.config = config;
-        this.vertx = vertx;
-        handlerSynchronicity = config.getJsonObject("session-store")
-            .getString("synchronicity");
 
         this.sessionStore = sessionStore;
     }
@@ -82,16 +73,6 @@ public class OmeroWebSessionRequestHandler implements Handler<RoutingContext>{
      */
     @Override
     public void handle(RoutingContext event) {
-        if (handlerSynchronicity.equals("sync")) {
-            handleSync(event);
-        }
-        else if (handlerSynchronicity.equals("async")) {
-            handleAsync(event);
-        }
-    }
-
-
-    public void handleAsync(RoutingContext event) {
         // First try to get the OMERO session key from the
         // `X-OMERO-Session-Key` request header.
         String sessionKey =
@@ -128,58 +109,12 @@ public class OmeroWebSessionRequestHandler implements Handler<RoutingContext>{
         }
         final String djangoSessionKey = cookie.getValue();
         log.debug("OMERO.web session key: {}", djangoSessionKey);
-        sessionStore.getConnectorAsync(djangoSessionKey)
+        sessionStore.getConnector(djangoSessionKey)
             .whenComplete((connector, throwable) -> {
             if (throwable != null) {
                 log.error("Exception retrieving connector", throwable);
             }
             handleConnector(connector, event);
-        });
-    }
-
-
-    public void handleSync(RoutingContext event) {
-        // First try to get the OMERO session key from the
-        // `X-OMERO-Session-Key` request header.
-        String sessionKey =
-                event.request().headers().get("X-OMERO-Session-Key");
-        if (sessionKey != null) {
-            log.debug("OMERO session key from header: {}", sessionKey);
-            event.put("omero.session_key", sessionKey);
-            event.next();
-            return;
-        }
-
-        // Next see if it was provided via the `bsession` URL parameter
-        sessionKey = event.request().getParam("bsession");
-        if (sessionKey != null) {
-            log.debug(
-                "OMERO session key from 'bsession' URL parameter: {}",
-                sessionKey
-            );
-            event.put("omero.session_key", sessionKey);
-            event.next();
-            return;
-        }
-
-        // Finally, check if we have a standard OMERO.web cookie available to
-        // retrieve the session key from.
-        JsonObject omeroWeb = config.getJsonObject(
-                "omero.web", new JsonObject());
-        String name = omeroWeb.getString("session_cookie_name", "sessionid");
-        Cookie cookie = event.getCookie(name);
-        if (cookie == null) {
-            event.response().setStatusCode(403);
-            event.response().end();
-            return;
-        }
-        final String djangoSessionKey = cookie.getValue();
-        log.debug("OMERO.web session key: {}", djangoSessionKey);
-        vertx.executeBlocking(future -> {
-            IConnector connector = sessionStore.getConnector(djangoSessionKey);
-            future.complete(connector);
-        }, res-> {
-            handleConnector((IConnector) res.result(), event);
         });
     }
 }
