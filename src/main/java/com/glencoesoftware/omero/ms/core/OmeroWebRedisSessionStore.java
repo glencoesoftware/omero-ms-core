@@ -101,7 +101,7 @@ public class OmeroWebRedisSessionStore implements OmeroWebSessionStore {
             }
             return null;
         }).exceptionally(t -> {
-            log.error(t.getMessage());
+            log.error(t.getMessage(), t);
             return null;
         });
     }
@@ -109,6 +109,7 @@ public class OmeroWebRedisSessionStore implements OmeroWebSessionStore {
     @Override
     public void close() throws IOException {
         connection.close();
+        client.shutdown();
     }
 
 }

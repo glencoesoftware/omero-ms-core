@@ -87,7 +87,6 @@ public class RedisCacheVerticle extends AbstractVerticle {
      * Get a key from the cache.
      */
     private void get(Message<String> message) {
-        log.info("In RedisCacheVerticle:set");
         if (connection == null) {
             log.debug("Cache not enabled");
             message.reply(null);
