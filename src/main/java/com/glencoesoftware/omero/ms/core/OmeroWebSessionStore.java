@@ -30,19 +30,11 @@ public interface OmeroWebSessionStore extends Closeable {
 
     /**
      * Retrieve the OMERO.web session's current
-     * <code>omeroweb.connector.Connector</code> synchronously.
-     * @param sessionKey Session key to retrieve a connector for.
-     * @return Connector instance or <code>null</code> if session lookup fails.
-     */
-    IConnector getConnector(String sessionKey);
-
-    /**
-     * Retrieve the OMERO.web session's current
      * <code>omeroweb.connector.Connector</code>.
      * @param sessionKey Session key to retrieve a connector for.
      * @return A new {@link CompletionStage} that, when the {@link IConnector}
      * retrieval is complete is executed.
      */
-    CompletionStage<IConnector> getConnectorAsync(String sessionKey);
+    CompletionStage<IConnector> getConnector(String sessionKey);
 
 }

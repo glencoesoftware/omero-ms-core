@@ -19,6 +19,7 @@
 package com.glencoesoftware.omero.ms.core;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.concurrent.CompletionStage;
 
 import org.python.core.Py;
@@ -27,15 +28,13 @@ import org.python.core.util.StringUtil;
 import org.python.modules.cPickle;
 import org.slf4j.LoggerFactory;
 
-import com.lambdaworks.redis.RedisClient;
-import com.lambdaworks.redis.RedisFuture;
-import com.lambdaworks.redis.api.StatefulRedisConnection;
-import com.lambdaworks.redis.api.async.RedisAsyncCommands;
-import com.lambdaworks.redis.api.sync.RedisCommands;
-import com.lambdaworks.redis.codec.ByteArrayCodec;
-
 import brave.ScopedSpan;
 import brave.Tracing;
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisFuture;
+import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.api.async.RedisAsyncCommands;
+import io.lettuce.core.codec.ByteArrayCodec;
 
 /**
  * A Redis backed OMERO.web session store. Based on a provided session key,
@@ -71,40 +70,10 @@ public class OmeroWebRedisSessionStore implements OmeroWebSessionStore {
     }
 
     /* (non-Javadoc)
-     * @see com.glencoesoftware.omero.ms.core.OmeroWebSessionStore#getConnector(java.lang.String)
+     * @see com.glencoesoftware.omero.ms.core.OmeroWebSessionStore#getConnector(java.lang.String, com.glencoesoftware.omero.ms.core.ConnectorHandler)
      */
     @Override
-    public IConnector getConnector(String sessionKey) {
-        ScopedSpan span = Tracing.currentTracer().startScopedSpan("get_connector_redis");
-        span.tag("omero_web.session_key", sessionKey);
-        try {
-            byte[] pickledDjangoSession = null;
-            RedisCommands<byte[], byte[]> commands = connection.sync();
-            String key = String.format(
-                    KEY_FORMAT,
-                    "",  // OMERO_WEB_CACHE_KEY_PREFIX
-                    1,  // OMERO_WEB_CACHE_VERSION
-                    sessionKey);
-            // Binary retrieval, get(String) includes a UTF-8 step
-            pickledDjangoSession = commands.get(key.getBytes());
-            if (pickledDjangoSession == null) {
-                return null;
-            }
-
-            PyDictionary djangoSession = (PyDictionary) cPickle.loads(
-                    Py.newString(StringUtil.fromBytes(pickledDjangoSession)));
-            log.debug("Session: {}", djangoSession);
-            return (IConnector) djangoSession.get("connector");
-        } finally {
-            span.finish();
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see com.glencoesoftware.omero.ms.core.OmeroWebSessionStore#getConnectorAsync(java.lang.String, com.glencoesoftware.omero.ms.core.ConnectorHandler)
-     */
-    @Override
-    public CompletionStage<IConnector> getConnectorAsync(String sessionKey) {
+    public CompletionStage<IConnector> getConnector(String sessionKey) {
         RedisAsyncCommands<byte[], byte[]> commands = connection.async();
         String key = String.format(
                 KEY_FORMAT,
@@ -131,12 +100,16 @@ public class OmeroWebRedisSessionStore implements OmeroWebSessionStore {
                 span.finish();
             }
             return null;
+        }).exceptionally(t -> {
+            log.error(t.getMessage(), t);
+            return null;
         });
     }
 
     @Override
     public void close() throws IOException {
         connection.close();
+        client.shutdown();
     }
 
 }

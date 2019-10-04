@@ -21,12 +21,11 @@ package com.glencoesoftware.omero.ms.core;
 
 import org.slf4j.LoggerFactory;
 
-import com.lambdaworks.redis.RedisClient;
-import com.lambdaworks.redis.RedisFuture;
-import com.lambdaworks.redis.api.StatefulRedisConnection;
-import com.lambdaworks.redis.api.async.RedisAsyncCommands;
-import com.lambdaworks.redis.codec.ByteArrayCodec;
-
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisFuture;
+import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.api.async.RedisAsyncCommands;
+import io.lettuce.core.codec.ByteArrayCodec;
 import brave.ScopedSpan;
 import brave.Tracing;
 import io.vertx.core.AbstractVerticle;
@@ -76,6 +75,12 @@ public class RedisCacheVerticle extends AbstractVerticle {
                 REDIS_CACHE_SET_EVENT, event -> {
                     set(event);
                 });
+    }
+
+    @Override
+    public void stop() {
+        connection.close();
+        client.shutdown();
     }
 
     /**
