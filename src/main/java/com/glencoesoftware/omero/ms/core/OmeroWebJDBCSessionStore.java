@@ -18,18 +18,12 @@
 
 package com.glencoesoftware.omero.ms.core;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.io.IOException;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CompletableFuture;
 import java.util.List;
 import java.util.Base64;
 
-import org.perf4j.StopWatch;
-import org.perf4j.slf4j.Slf4JStopWatch;
 import org.python.core.Py;
 import org.python.core.PyString;
 import org.python.core.PyList;
@@ -39,6 +33,8 @@ import org.python.modules.cPickle;
 
 import org.slf4j.LoggerFactory;
 
+import brave.ScopedSpan;
+import brave.Tracing;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -64,12 +60,6 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
     /** Vertx Async JDBC client */
     private JDBCClient client;
 
-    /** Synchronous JDBC connection */
-    private Connection syncConnection;
-
-    /** Connection URL */
-    private final String url;
-
     /**
      * Constructor
      * @param url full database URL with connection parameters.
@@ -78,24 +68,10 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
      * @since 3.3
      */
     public OmeroWebJDBCSessionStore(String url, Vertx vertx) {
-        this.url = url;
         client = JDBCClient.createShared(vertx, new JsonObject()
             .put("url", url)
             .put("driver_class", "org.postgresql.Driver")
             .put("max_pool_size", 30));
-    }
-
-    /**
-     * Retrieves the current synchronous connection, creating it if it has not
-     * been initialized yet.
-     * @return Synchronous JDBC connection
-     * @throws SQLException If there is an error retrieving the connection.
-     */
-    private Connection getSyncConnection() throws SQLException {
-        if (syncConnection == null) {
-            syncConnection = DriverManager.getConnection(url);
-        }
-        return syncConnection;
     }
 
     /**
@@ -124,46 +100,15 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
     /* (non-Javadoc)
      * @see com.glencoesoftware.omero.ms.core.OmeroWebSessionStore#getConnector(java.lang.String)
      */
-    public IConnector getConnector(String sessionKey) {
-        PreparedStatement st = null;
-        final StopWatch t0 = new Slf4JStopWatch("getConnector");
-        try {
-            st = getSyncConnection().prepareStatement(SELECT_SESSION_SQL);
-            st.setString(1, sessionKey);
-            java.sql.ResultSet rs = st.executeQuery();
-            if (!rs.next()){
-                // Nothing returned from query
-                return null;
-            } else {
-                String sessionData = rs.getString(1);
-                return getConnectorFromSessionData(sessionData);
-            }
-        } catch (SQLException e) {
-            log.error("SQLException caught when trying to get connector", e);
-        } finally {
-            t0.stop();
-            try {
-                if (st != null) {
-                    st.close();
-                }
-            } catch (SQLException e) {
-                log.error("Error closing JDBC statement", e);
-            }
-        }
-
-        return null;
-    }
-
-    /* (non-Javadoc)
-     * @see com.glencoesoftware.omero.ms.core.OmeroWebSessionStore#getConnectorAsync(java.lang.String)
-     */
-    public CompletionStage<IConnector> getConnectorAsync(String sessionKey) {
+    @Override
+    public CompletionStage<IConnector> getConnector(String sessionKey) {
         CompletableFuture<IConnector> future =
                 new CompletableFuture<IConnector>();
-        final StopWatch t0 = new Slf4JStopWatch("getConnectorAsync");
+        ScopedSpan span = Tracing.currentTracer().startScopedSpan("get_connector_jdbc_async");
+        span.tag("omero_web.session_key", sessionKey);
         client.getConnection(result -> {
             if (result.failed()) {
-                t0.stop();
+                span.finish();
                 future.completeExceptionally(result.cause());
                 return;
             }
@@ -187,7 +132,7 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
                     future.complete(connector);
                 });
             } finally {
-                t0.stop();
+                span.finish();
             }
         });
         return future;
@@ -196,16 +141,9 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
     /* (non-Javadoc)
      * @see java.io.Closeable#close()
      */
+    @Override
     public void close() throws IOException {
-        try {
-            client.close();
-            if (syncConnection != null) {
-                syncConnection.close();
-            }
-        } catch (SQLException e) {
-            log.error("SQLException when closing connection.", e);
-        }
-        return;
+        client.close();
     }
 
 }
