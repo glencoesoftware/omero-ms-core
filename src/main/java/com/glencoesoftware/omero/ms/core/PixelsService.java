@@ -18,6 +18,8 @@
 
 package com.glencoesoftware.omero.ms.core;
 
+import java.io.File;
+
 import ome.api.IQuery;
 import ome.io.nio.BackOff;
 import ome.io.nio.FilePathResolver;
@@ -35,7 +37,7 @@ public class PixelsService extends ome.io.nio.PixelsService {
     public PixelsService(
             String path, long memoizerWait, FilePathResolver resolver,
             BackOff backOff, TileSizes sizes, IQuery iQuery) {
-        super(path, memoizerWait, resolver, backOff, sizes, iQuery);
+        super(path, true, new File(new File(path), "BioFormatsCache"), memoizerWait, resolver, backOff, sizes, iQuery);
     }
 
     @Override
