@@ -84,7 +84,6 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
         byte[] b64bytes = Base64.getDecoder().decode(sessionDataStr);
         int idx = ArrayUtils.indexOf(b64bytes, (byte)':');
         byte[] sessionData = Arrays.copyOfRange(b64bytes, idx + 1, b64bytes.length);
-        log.info("Getting DB pickled session");
         return new PickledSessionConnector(sessionData);
     }
 
