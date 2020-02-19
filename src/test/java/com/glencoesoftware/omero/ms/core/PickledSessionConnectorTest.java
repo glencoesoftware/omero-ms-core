@@ -2,20 +2,10 @@ package com.glencoesoftware.omero.ms.core;
 
 import org.testng.annotations.*;
 
-import com.glencoesoftware.omero.ms.core.PythonPickle.Op;
-
-import io.kaitai.struct.ByteBufferKaitaiStream;
-
 import org.testng.Assert;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;;
 
 
