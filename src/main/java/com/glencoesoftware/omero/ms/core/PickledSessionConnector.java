@@ -40,7 +40,7 @@ public class PickledSessionConnector implements IConnector {
 
     private String omeroSessionKey;
 
-    Long userId;
+    private Long userId;
 
     public PickledSessionConnector(byte[] sessionData) {
         ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(sessionData);
