@@ -77,14 +77,11 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
      * @return The connector from the session data
      * @since 3.3
      */
-    private IConnector getConnectorFromSessionData(String sessionDataStr) {
-        if (sessionDataStr == null) {
+    private IConnector getConnectorFromSessionData(String sessionData) {
+        if (sessionData == null) {
             return null;
         }
-        byte[] b64bytes = Base64.getDecoder().decode(sessionDataStr);
-        int idx = ArrayUtils.indexOf(b64bytes, (byte)':');
-        byte[] sessionData = Arrays.copyOfRange(b64bytes, idx + 1, b64bytes.length);
-        return new PickledSessionConnector(sessionData);
+        return new JDBCPickledSessionConnector(sessionData);
     }
 
     /* (non-Javadoc)

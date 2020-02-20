@@ -30,7 +30,7 @@ import io.kaitai.struct.ByteBufferKaitaiStream;
 public class PickledSessionConnector implements IConnector {
 
     private static final org.slf4j.Logger log =
-            LoggerFactory.getLogger(OmeroWebRedisSessionStore.class);
+            LoggerFactory.getLogger(PickledSessionConnector.class);
 
     private Long serverId;
 
@@ -42,7 +42,14 @@ public class PickledSessionConnector implements IConnector {
 
     private Long userId;
 
-    public PickledSessionConnector(byte[] sessionData) {
+    protected PickledSessionConnector() {
+    }
+
+    public PickledSessionConnector(byte[] serialized) {
+        init(serialized);
+    }
+
+    protected void init(byte[] sessionData) {
         ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(sessionData);
         System.out.println(bbks.toString());
         PythonPickle pickleData = new PythonPickle(bbks);

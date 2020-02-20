@@ -18,18 +18,16 @@
 
 package com.glencoesoftware.omero.ms.core;
 
+import java.util.Base64;
+
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import java.util.Arrays;
-import java.util.Base64;
-import org.apache.commons.lang.ArrayUtils;
 
 
 public class PickledSessionConnectorTest {
 
     private static final String FULL_LONG_DATA =
-          "gAJ9cQEoVQd1c2VyX2lkigBVBnNoYXJlc31VCWNvbm5lY3RvcmNvb"
+        "gAJ9cQEoVQd1c2VyX2lkigBVBnNoYXJlc31VCWNvbm5lY3RvcmNvb"
         + "WVyb3dlYi5jb25uZWN0b3IKQ29ubmVjdG9yCnECKYFxA31xBChVCWlzX3NlY3VyZX"
         + "EFiVUJc2VydmVyX2lkcQZYAQAAADFVB3VzZXJfaWRxB4oEoMxbB1URb21lcm9fc2V"
         + "zc2lvbl9rZXlxCFUkZGNmNGFmYjYtZmFlOS00YjcxLTkwYjAtNjcyNjJlMWQ0OGM0"
@@ -54,7 +52,7 @@ public class PickledSessionConnectorTest {
         + "VyfXEXVRJ0aHVtYl9kZWZhdWx0X3NpemVLYHN1VQpjYW5fY3JlYXRliHUu";
 
     private static final String DB_SESSION_DATA =
-          "ZmNjODgyNGVhNTgzODcyODVkMWQ5ZGI1NzVhYWU1ODgxZjA1NzI4YzqAAn"
+        "ZmNjODgyNGVhNTgzODcyODVkMWQ5ZGI1NzVhYWU1ODgxZjA1NzI4YzqAAn"
         + "1xAShVB3VzZXJfaWSKAFUGc2hhcmVzfVUJY29ubmVjdG9yY29tZXJvd2ViLmNvbm5"
         + "lY3RvcgpDb25uZWN0b3IKcQIpgXEDfXEEKFUJaXNfc2VjdXJlcQWJVQlzZXJ2ZXJf"
         + "aWRxBlgBAAAAMVUHdXNlcl9pZHEHigBVEW9tZXJvX3Nlc3Npb25fa2V5cQhVJGRjZ"
@@ -79,29 +77,64 @@ public class PickledSessionConnectorTest {
         + "0cy9Qb3B1bGF0ZV9ST0kucHlVBWVtYWlsiVUHYnJvd3Nlcn1xF1USdGh1bWJfZGVm"
         + "YXVsdF9zaXplS2BzdVUKY2FuX2NyZWF0ZYh1Lg==";
 
+    private static final String REDIS_SESSION_DATA =
+        "gAJ9cQEoVQd1c2VyX2lkigJIDlUMYWN0aXZlX2dyb3VwTfECVQljb25uZWN0b3J"
+        + "jb21lcm93ZWIuY29ubmVjdG9yCkNvbm5lY3RvcgpxAimBcQN9cQQoVQlpc19z"
+        + "ZWN1cmVxBYlVCXNlcnZlcl9pZHEGWAEAAAAxVQd1c2VyX2lkcQeKAkgOVRFvb"
+        + "WVyb19zZXNzaW9uX2tleXEIVSRkYjJjOTI4Yy03NzJhLTQyMmYtOWRkNC04MG"
+        + "YxYjU4NjA5NzZxCVUJaXNfcHVibGljcQqJdWJVCGNhbGxiYWNrfVUPc2VydmV"
+        + "yX3NldHRpbmdzfXELKFUDd2VifXEMVQRob3N0VQBzVQZ2aWV3ZXJ9cQ0oVRJp"
+        + "bnRlcnBvbGF0ZV9waXhlbHOIVQlyb2lfbGltaXRN0AdVEmluaXRpYWxfem9vb"
+        + "V9sZXZlbEsAdVURc2NyaXB0c190b19pZ25vcmVV7i9vbWVyby9maWd1cmVfc2"
+        + "NyaXB0cy9Nb3ZpZV9GaWd1cmUucHksL29tZXJvL2ZpZ3VyZV9zY3JpcHRzL1N"
+        + "wbGl0X1ZpZXdfRmlndXJlLnB5LC9vbWVyby9maWd1cmVfc2NyaXB0cy9UaHVt"
+        + "Ym5haWxfRmlndXJlLnB5LC9vbWVyby9maWd1cmVfc2NyaXB0cy9ST0lfU3Bsa"
+        + "XRfRmlndXJlLnB5LC9vbWVyby9leHBvcnRfc2NyaXB0cy9NYWtlX01vdmllLn"
+        + "B5LC9vbWVyby9pbXBvcnRfc2NyaXB0cy9Qb3B1bGF0ZV9ST0kucHlVAnVpfXE"
+        + "OKFUEbWVudX1xD1UIZHJvcGRvd259cRAoVQpjb2xsZWFndWVzfXERKFUHZW5h"
+        + "YmxlZIhVBWxhYmVsVQdNZW1iZXJzdVUIZXZlcnlvbmV9cRIoVQdlbmFibGVki"
+        + "FUFbGFiZWxVC0FsbCBNZW1iZXJzdVUHbGVhZGVyc31xEyhVB2VuYWJsZWSIVQ"
+        + "VsYWJlbFUGT3duZXJzdXVzVQR0cmVlfXEUKFUHb3JwaGFuc31xFShVB2VuYWJ"
+        + "sZWSIVQRuYW1lVQ9PcnBoYW5lZCBJbWFnZXNVC2Rlc2NyaXB0aW9uVYFUaGlz"
+        + "IGlzIGEgdmlydHVhbCBjb250YWluZXIgd2l0aCBvcnBoYW5lZCBpbWFnZXMuI"
+        + "FRoZXNlIGltYWdlcyBhcmUgbm90IGxpbmtlZCBhbnl3aGVyZS4gSnVzdCBkcm"
+        + "FnIHRoZW0gdG8gdGhlIHNlbGVjdGVkIGNvbnRhaW5lci51VQp0eXBlX29yZGV"
+        + "yVTl0YWdzZXQsdGFnLHByb2plY3QsZGF0YXNldCxzY3JlZW4scGxhdGUsYWNx"
+        + "dWlzaXRpb24saW1hZ2V1dVULZG93bmxvYWRfYXN9cRZVCG1heF9zaXplSgBEl"
+        + "QhzVQVlbWFpbIhVB2Jyb3dzZXJ9cRdVEnRodW1iX2RlZmF1bHRfc2l6ZUtgc3"
+        + "VVBnNoYXJlc31VCmNhbl9jcmVhdGWIdS4=";
+
     @Test
-    public void testUnpickling() {
-        byte[] b64bytes = Base64.getDecoder().decode(DB_SESSION_DATA);
-        int idx = ArrayUtils.indexOf(b64bytes, (byte)':');
-        byte[] sessionData = Arrays.copyOfRange(b64bytes, idx + 1, b64bytes.length);
-        IConnector testConnector = new PickledSessionConnector(sessionData);
-        Assert.assertEquals(testConnector.getIsSecure(), Boolean.FALSE);
-        Assert.assertEquals(testConnector.getServerId(), Long.valueOf(1l));
-        Assert.assertEquals(testConnector.getIsPublic(), Boolean.FALSE);
-        Assert.assertEquals(testConnector.getOmeroSessionKey(), "dcf4afb6-fae9-4b71-90b0-67262e1d48c4");
-        Assert.assertEquals(testConnector.getUserId(), Long.valueOf(0l));
+    public void testUnpicklingJDBC() {
+        IConnector v = new JDBCPickledSessionConnector(DB_SESSION_DATA);
+        Assert.assertEquals(v.getIsSecure(), Boolean.FALSE);
+        Assert.assertEquals(v.getServerId(), Long.valueOf(1L));
+        Assert.assertEquals(v.getIsPublic(), Boolean.FALSE);
+        Assert.assertEquals(
+            v.getOmeroSessionKey(), "dcf4afb6-fae9-4b71-90b0-67262e1d48c4");
+        Assert.assertEquals(v.getUserId(), Long.valueOf(0l));
     }
 
     @Test
-    public void testUnpicklingLong() {
-        byte[] b64bytes = Base64.getDecoder().decode(FULL_LONG_DATA);
-        int idx = ArrayUtils.indexOf(b64bytes, (byte)':');
-        byte[] sessionData = Arrays.copyOfRange(b64bytes, idx + 1, b64bytes.length);
-        IConnector testConnector = new PickledSessionConnector(sessionData);
-        Assert.assertEquals(testConnector.getIsSecure(), Boolean.FALSE);
-        Assert.assertEquals(testConnector.getServerId(), Long.valueOf(1l));
-        Assert.assertEquals(testConnector.getIsPublic(), Boolean.FALSE);
-        Assert.assertEquals(testConnector.getOmeroSessionKey(), "dcf4afb6-fae9-4b71-90b0-67262e1d48c4");
-        Assert.assertEquals(testConnector.getUserId(), Long.valueOf(123456672L));
+    public void testUnpicklingJDBCLong() {
+        IConnector v = new JDBCPickledSessionConnector(FULL_LONG_DATA);
+        Assert.assertEquals(v.getIsSecure(), Boolean.FALSE);
+        Assert.assertEquals(v.getServerId(), Long.valueOf(1L));
+        Assert.assertEquals(v.getIsPublic(), Boolean.FALSE);
+        Assert.assertEquals(
+            v.getOmeroSessionKey(), "dcf4afb6-fae9-4b71-90b0-67262e1d48c4");
+        Assert.assertEquals(v.getUserId(), Long.valueOf(123456672L));
+    }
+
+    @Test
+    public void testUnpicklingRedis() {
+        IConnector v = new PickledSessionConnector(
+                Base64.getDecoder().decode(REDIS_SESSION_DATA));
+        Assert.assertEquals(v.getIsSecure(), Boolean.FALSE);
+        Assert.assertEquals(v.getServerId(), Long.valueOf(1L));
+        Assert.assertEquals(v.getIsPublic(), Boolean.FALSE);
+        Assert.assertEquals(
+            v.getOmeroSessionKey(), "db2c928c-772a-422f-9dd4-80f1b5860976");
+        Assert.assertEquals(v.getUserId(), Long.valueOf(3656L));
     }
 }
