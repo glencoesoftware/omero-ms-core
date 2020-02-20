@@ -1,4 +1,7 @@
-// This is a generated file! Please edit source .ksy file and use kaitai-struct-compiler to rebuild
+/* This is a generated file! Please edit source .ksy file and use kaitai-struct-compiler to rebuild
+ * It was compiled from python_pickle.ksy in git@github.com:kaitai-io/kaitai_struct_formats.git
+ * commit cde1b06de6fc639df99cd62fca9cd07634c64d2a on 2020/02/20
+*/
 
 package com.glencoesoftware.omero.ms.core;
 
@@ -6,15 +9,9 @@ import io.kaitai.struct.ByteBufferKaitaiStream;
 import io.kaitai.struct.KaitaiStruct;
 import io.kaitai.struct.KaitaiStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.Map;
-
-import org.apache.commons.lang.ArrayUtils;
-
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.nio.charset.Charset;
 
 
@@ -233,15 +230,6 @@ public class PythonPickle extends KaitaiStruct {
         private PythonPickle.Op _parent;
         public int len() { return len; }
         public byte[] val() { return val; }
-        public Long longVal() {
-            if (val.length == 0) {
-                return Long.valueOf(0l);
-            }
-            byte[] revVal = Arrays.copyOf(val, val.length);
-            ArrayUtils.reverse(revVal);
-            BigInteger bigInt = new BigInteger(revVal);
-            return Long.valueOf(bigInt.longValue());
-        }
         public PythonPickle _root() { return _root; }
         public PythonPickle.Op _parent() { return _parent; }
     }

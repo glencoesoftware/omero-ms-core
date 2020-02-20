@@ -18,11 +18,13 @@
 
 package com.glencoesoftware.omero.ms.core;
 
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.LoggerFactory;
 
 import com.glencoesoftware.omero.ms.core.PythonPickle.Op;
@@ -143,6 +145,16 @@ public class PickledSessionConnector implements IConnector {
         }
     }
 
+    private Long longFromBytes(byte[] bytesVal) {
+        if (bytesVal.length == 0) {
+            return Long.valueOf(0l);
+        }
+        byte[] revVal = Arrays.copyOf(bytesVal, bytesVal.length);
+        ArrayUtils.reverse(revVal);
+        BigInteger bigInt = new BigInteger(revVal);
+        return Long.valueOf(bigInt.longValue());
+    }
+
     private Long deserializeNumberField(Iterator<Op> opIterator) {
         assertStoreOpCode(opIterator);
         Op value = opIterator.next();
@@ -152,7 +164,7 @@ public class PickledSessionConnector implements IConnector {
             case BININT2:
                 return new Long((Integer) value.arg());
             case LONG1:
-                return ((PythonPickle.Long1) value.arg()).longVal();
+                return longFromBytes(((PythonPickle.Long1) value.arg()).val());
             default:
                 throw new IllegalArgumentException(
                         "Unexpected opcode for number field: " + value.code());
