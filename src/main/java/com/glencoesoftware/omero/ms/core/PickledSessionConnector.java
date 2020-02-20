@@ -19,6 +19,7 @@
 package com.glencoesoftware.omero.ms.core;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -32,6 +33,12 @@ public class PickledSessionConnector implements IConnector {
 
     private static final org.slf4j.Logger log =
             LoggerFactory.getLogger(PickledSessionConnector.class);
+
+    private static final List<PythonPickle.Opcode> STRING_TYPE_OPCODES =
+        Arrays.asList(new PythonPickle.Opcode[] {
+                PythonPickle.Opcode.SHORT_BINSTRING,
+                PythonPickle.Opcode.BINUNICODE
+        });
 
     private Long serverId;
 
@@ -59,8 +66,8 @@ public class PickledSessionConnector implements IConnector {
             Op op = opIterator.next();
             // Loop through until we find the dictionary key "connector" being
             // set
-            if (op.code() == PythonPickle.Opcode.SHORT_BINSTRING) {
-                String key = toString((PythonPickle.String1) op.arg());
+            if (STRING_TYPE_OPCODES.contains(op.code())) {
+                String key = toString(op.arg());
                 if ("connector".equals(key)) {
                     deserializeConnector(opIterator);
                 }
@@ -68,25 +75,40 @@ public class PickledSessionConnector implements IConnector {
         }
     }
 
-    private String toString(PythonPickle.String1 string) {
-        return new String(string.val(), StandardCharsets.US_ASCII);
+    private String toString(Object string) {
+        if (string instanceof PythonPickle.String1) {
+            return new String(
+                ((PythonPickle.String1) string).val(),
+                StandardCharsets.US_ASCII);
+        }
+        if (string instanceof PythonPickle.Unicodestring1) {
+            return ((PythonPickle.Unicodestring1) string).val();
+        }
+        if (string instanceof PythonPickle.Unicodestring4) {
+            return ((PythonPickle.Unicodestring4) string).val();
+        }
+        if (string instanceof PythonPickle.Unicodestring8) {
+            return ((PythonPickle.Unicodestring8) string).val();
+        }
+        throw new IllegalArgumentException(
+            "Unexpected string type: " + string.getClass());
     }
 
     private void deserializeConnector(Iterator<Op> opIterator) {
         while (opIterator.hasNext()) {
             Op op = opIterator.next();
-            if (op.code() == PythonPickle.Opcode.SHORT_BINSTRING) {
-                String fieldName = toString((PythonPickle.String1) op.arg());
+            if (STRING_TYPE_OPCODES.contains(op.code())) {
+                String fieldName = toString(op.arg());
                 switch (fieldName) {
                     case "is_secure":
                         isSecure = deserializeBooleanField(opIterator);
                         break;
                     case "server_id":
                         serverId = Long.parseLong(
-                                deserializeUnicodeField(opIterator));
+                                deserializeStringField(opIterator));
                         break;
                     case "user_id":
-                        userId = deserializeLongField(opIterator);
+                        userId = deserializeNumberField(opIterator);
                         break;
                     case "omero_session_key":
                         omeroSessionKey = deserializeStringField(opIterator);
@@ -121,40 +143,30 @@ public class PickledSessionConnector implements IConnector {
         }
     }
 
-    private Long deserializeLongField(Iterator<Op> opIterator) {
+    private Long deserializeNumberField(Iterator<Op> opIterator) {
         assertStoreOpCode(opIterator);
         Op value = opIterator.next();
         switch (value.code()) {
+            case BININT:
+            case BININT1:
+            case BININT2:
+                return new Long((Integer) value.arg());
             case LONG1:
                 return ((PythonPickle.Long1) value.arg()).longVal();
             default:
                 throw new IllegalArgumentException(
-                        "Unexpected opcode for long field: " + value.code());
+                        "Unexpected opcode for number field: " + value.code());
         }
     }
 
     private String deserializeStringField(Iterator<Op> opIterator) {
         assertStoreOpCode(opIterator);
         Op value = opIterator.next();
-        switch (value.code()) {
-            case SHORT_BINSTRING:
-                return toString((PythonPickle.String1) value.arg());
-            default:
-                throw new IllegalArgumentException(
-                        "Unexpected opcode for string field: " + value.code());
+        if (STRING_TYPE_OPCODES.contains(value.code())) {
+            return toString(value.arg());
         }
-    }
-
-    private String deserializeUnicodeField(Iterator<Op> opIterator) {
-        assertStoreOpCode(opIterator);
-        Op value = opIterator.next();
-        switch (value.code()) {
-            case BINUNICODE:
-                return ((PythonPickle.Unicodestring4) value.arg()).val();
-            default:
-                throw new IllegalArgumentException(
-                        "Unexpected opcode for unicode field: " + value.code());
-        }
+        throw new IllegalArgumentException(
+                "Unexpected opcode for string field: " + value.code());
     }
 
     @Override
