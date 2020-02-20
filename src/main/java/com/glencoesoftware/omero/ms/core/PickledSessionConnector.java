@@ -19,7 +19,8 @@
 package com.glencoesoftware.omero.ms.core;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import org.slf4j.LoggerFactory;
 
@@ -51,78 +52,108 @@ public class PickledSessionConnector implements IConnector {
 
     protected void init(byte[] sessionData) {
         ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(sessionData);
-        System.out.println(bbks.toString());
         PythonPickle pickleData = new PythonPickle(bbks);
-        ArrayList<Op> ops = pickleData.ops();
-
-        for(int i = 0; i < ops.size(); i++) {
-            Op op = ops.get(i);
-            if(op.code() == PythonPickle.Opcode.SHORT_BINSTRING) {
-                PythonPickle.String1 str1 = (PythonPickle.String1) op.arg();
-                String javaStr = new String(str1.val(), StandardCharsets.US_ASCII);
-                if (javaStr.contentEquals("connector")) {
-                    for(int j = i; j < ops.size(); j++) {
-                        op = ops.get(j);
-                        if(op.code() == PythonPickle.Opcode.SETITEMS) {
-                            break;
-                        }
-                        if(op.code() == PythonPickle.Opcode.SHORT_BINSTRING) {
-                            PythonPickle.String1 innerStr1 = (PythonPickle.String1) op.arg();
-                            String innerJavaStr = new String(innerStr1.val(), StandardCharsets.US_ASCII);
-                            if (innerJavaStr.equals("is_secure")) {
-                                Op valueOp = ops.get(j+2);
-                                if (valueOp.code() == PythonPickle.Opcode.NEWTRUE)
-                                    isSecure = true;
-                                else if (valueOp.code().equals(PythonPickle.Opcode.NEWFALSE))
-                                    isSecure = false;
-                                else {
-                                    log.error("Incorrect code for value of is_secure: " + valueOp.code().toString());
-                                }
-                            }
-                            else if (innerJavaStr.equals("server_id")) {
-                                Op valueOp = ops.get(j+2);
-                                if (valueOp.code() == PythonPickle.Opcode.BINUNICODE) {
-                                    PythonPickle.Unicodestring4 idStr = (PythonPickle.Unicodestring4) valueOp.arg();
-                                    serverId = Long.parseLong(idStr.val());
-                                    System.out.println("Setting ServerID: " + serverId.toString());
-                                } else {
-                                    log.error("Incorrect code for value of server_id: " + valueOp.code().toString());
-                                }
-                            }
-                            else if (innerJavaStr.equals("user_id")) {
-                                Op valueOp = ops.get(j+2);
-                                if (valueOp.code() == PythonPickle.Opcode.LONG1) {
-                                    PythonPickle.Long1 userIdL1 = (PythonPickle.Long1) valueOp.arg();
-                                    userId = userIdL1.longVal();
-                                } else {
-                                    log.error("Incorrect code for value of user_id: " + valueOp.code().toString());
-                                }
-                            }
-                            else if (innerJavaStr.equals("omero_session_key")) {
-                                Op valueOp = ops.get(j+2);
-                                if (valueOp.code() == PythonPickle.Opcode.SHORT_BINSTRING) {
-                                    PythonPickle.String1 sessionStr1 = (PythonPickle.String1) valueOp.arg();
-                                    omeroSessionKey = new String(sessionStr1.val(), StandardCharsets.US_ASCII);
-                                    System.out.println("Sessing session key: " + omeroSessionKey);
-                                } else {
-                                    log.error("Incorrect code for value of omero_session_key: " + valueOp.code().toString());
-                                }
-                            }
-                            else if (innerJavaStr.equals("is_public")) {
-                                Op valueOp = ops.get(j+2);
-                                if (valueOp.code() == PythonPickle.Opcode.NEWTRUE)
-                                    isPublic = true;
-                                else if (valueOp.code().equals(PythonPickle.Opcode.NEWFALSE))
-                                    isPublic = false;
-                                else {
-                                    log.error("Incorrect code for value of is_secure: " + valueOp.code().toString());
-                                }
-                            }
-                        }
-                    }
-                    break;
+        List<Op> ops = pickleData.ops();
+        Iterator<Op> opIterator = ops.iterator();
+        while (opIterator.hasNext()) {
+            Op op = opIterator.next();
+            // Loop through until we find the dictionary key "connector" being
+            // set
+            if (op.code() == PythonPickle.Opcode.SHORT_BINSTRING) {
+                String key = toString((PythonPickle.String1) op.arg());
+                if ("connector".equals(key)) {
+                    deserializeConnector(opIterator);
                 }
             }
+        }
+    }
+
+    private String toString(PythonPickle.String1 string) {
+        return new String(string.val(), StandardCharsets.US_ASCII);
+    }
+
+    private void deserializeConnector(Iterator<Op> opIterator) {
+        while (opIterator.hasNext()) {
+            Op op = opIterator.next();
+            if (op.code() == PythonPickle.Opcode.SHORT_BINSTRING) {
+                String fieldName = toString((PythonPickle.String1) op.arg());
+                switch (fieldName) {
+                    case "is_secure":
+                        isSecure = deserializeBooleanField(opIterator);
+                        break;
+                    case "server_id":
+                        serverId = Long.parseLong(
+                                deserializeUnicodeField(opIterator));
+                        break;
+                    case "user_id":
+                        userId = deserializeLongField(opIterator);
+                        break;
+                    case "omero_session_key":
+                        omeroSessionKey = deserializeStringField(opIterator);
+                        break;
+                    case "is_public":
+                        isPublic = deserializeBooleanField(opIterator);
+                        break;
+                }
+            }
+        }
+    }
+
+    private void assertStoreOpCode(Iterator<Op> opIterator) {
+        Op store = opIterator.next();
+        if (store.code() != PythonPickle.Opcode.BINPUT) {
+            throw new IllegalArgumentException(
+                    "Unexpected opcode: + " + store.code());
+        }
+    }
+
+    private Boolean deserializeBooleanField(Iterator<Op> opIterator) {
+        assertStoreOpCode(opIterator);
+        Op value = opIterator.next();
+        switch (value.code()) {
+            case NEWTRUE:
+                return true;
+            case NEWFALSE:
+                return false;
+            default:
+                throw new IllegalArgumentException(
+                        "Unexpected opcode for boolean field: " + value.code());
+        }
+    }
+
+    private Long deserializeLongField(Iterator<Op> opIterator) {
+        assertStoreOpCode(opIterator);
+        Op value = opIterator.next();
+        switch (value.code()) {
+            case LONG1:
+                return ((PythonPickle.Long1) value.arg()).longVal();
+            default:
+                throw new IllegalArgumentException(
+                        "Unexpected opcode for long field: " + value.code());
+        }
+    }
+
+    private String deserializeStringField(Iterator<Op> opIterator) {
+        assertStoreOpCode(opIterator);
+        Op value = opIterator.next();
+        switch (value.code()) {
+            case SHORT_BINSTRING:
+                return toString((PythonPickle.String1) value.arg());
+            default:
+                throw new IllegalArgumentException(
+                        "Unexpected opcode for string field: " + value.code());
+        }
+    }
+
+    private String deserializeUnicodeField(Iterator<Op> opIterator) {
+        assertStoreOpCode(opIterator);
+        Op value = opIterator.next();
+        switch (value.code()) {
+            case BINUNICODE:
+                return ((PythonPickle.Unicodestring4) value.arg()).val();
+            default:
+                throw new IllegalArgumentException(
+                        "Unexpected opcode for unicode field: " + value.code());
         }
     }
 
