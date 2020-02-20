@@ -77,7 +77,7 @@ public class PickledSessionConnectorTest {
         + "0cy9Qb3B1bGF0ZV9ST0kucHlVBWVtYWlsiVUHYnJvd3Nlcn1xF1USdGh1bWJfZGVm"
         + "YXVsdF9zaXplS2BzdVUKY2FuX2NyZWF0ZYh1Lg==";
 
-    private static final String REDIS_SESSION_DATA =
+    private static final String REDIS_SESSION_DATA_PY27 =
         "gAJ9cQEoVQd1c2VyX2lkigJIDlUMYWN0aXZlX2dyb3VwTfECVQljb25uZWN0b3J"
         + "jb21lcm93ZWIuY29ubmVjdG9yCkNvbm5lY3RvcgpxAimBcQN9cQQoVQlpc19z"
         + "ZWN1cmVxBYlVCXNlcnZlcl9pZHEGWAEAAAAxVQd1c2VyX2lkcQeKAkgOVRFvb"
@@ -104,6 +104,38 @@ public class PickledSessionConnectorTest {
         + "QhzVQVlbWFpbIhVB2Jyb3dzZXJ9cRdVEnRodW1iX2RlZmF1bHRfc2l6ZUtgc3"
         + "VVBnNoYXJlc31VCmNhbl9jcmVhdGWIdS4=";
 
+    private static final String REDIS_SESSION_DATA_PY3 =
+        "gAN9cQAoWAgAAABjYWxsYmFja3EBfXECWA8AAABzZXJ2ZXJfc2V0dGluZ3NxA31"
+        + "xBChYCwAAAGRvd25sb2FkX2FzcQV9cQZYCAAAAG1heF9zaXplcQdKAESVCHNY"
+        + "BgAAAHZpZXdlcnEIfXEJKFgSAAAAaW50ZXJwb2xhdGVfcGl4ZWxzcQqIWBIAA"
+        + "ABpbml0aWFsX3pvb21fbGV2ZWxxC0sAWAkAAAByb2lfbGltaXRxDE3QB3VYAg"
+        + "AAAHVpcQ19cQ4oWAQAAABtZW51cQ99cRBYCAAAAGRyb3Bkb3ducRF9cRIoWAo"
+        + "AAABjb2xsZWFndWVzcRN9cRQoWAUAAABsYWJlbHEVWAcAAABNZW1iZXJzcRZY"
+        + "BwAAAGVuYWJsZWRxF4h1WAcAAABsZWFkZXJzcRh9cRkoWAUAAABsYWJlbHEaW"
+        + "AYAAABPd25lcnNxG1gHAAAAZW5hYmxlZHEciHVYCAAAAGV2ZXJ5b25lcR19cR"
+        + "4oWAUAAABsYWJlbHEfWAsAAABBbGwgTWVtYmVyc3EgWAcAAABlbmFibGVkcSG"
+        + "IdXVzWAQAAAB0cmVlcSJ9cSMoWAcAAABvcnBoYW5zcSR9cSUoWAsAAABkZXNj"
+        + "cmlwdGlvbnEmWIEAAABUaGlzIGlzIGEgdmlydHVhbCBjb250YWluZXIgd2l0a"
+        + "CBvcnBoYW5lZCBpbWFnZXMuIFRoZXNlIGltYWdlcyBhcmUgbm90IGxpbmtlZC"
+        + "Bhbnl3aGVyZS4gSnVzdCBkcmFnIHRoZW0gdG8gdGhlIHNlbGVjdGVkIGNvbnR"
+        + "haW5lci5xJ1gHAAAAZW5hYmxlZHEoiFgEAAAAbmFtZXEpWA8AAABPcnBoYW5l"
+        + "ZCBJbWFnZXNxKnVYCgAAAHR5cGVfb3JkZXJxK1g5AAAAdGFnc2V0LHRhZyxwc"
+        + "m9qZWN0LGRhdGFzZXQsc2NyZWVuLHBsYXRlLGFjcXVpc2l0aW9uLGltYWdlcS"
+        + "x1dVgFAAAAZW1haWxxLYhYEQAAAHNjcmlwdHNfdG9faWdub3JlcS5Y7gAAAC9"
+        + "vbWVyby9maWd1cmVfc2NyaXB0cy9Nb3ZpZV9GaWd1cmUucHksL29tZXJvL2Zp"
+        + "Z3VyZV9zY3JpcHRzL1NwbGl0X1ZpZXdfRmlndXJlLnB5LC9vbWVyby9maWd1c"
+        + "mVfc2NyaXB0cy9UaHVtYm5haWxfRmlndXJlLnB5LC9vbWVyby9maWd1cmVfc2"
+        + "NyaXB0cy9ST0lfU3BsaXRfRmlndXJlLnB5LC9vbWVyby9leHBvcnRfc2NyaXB"
+        + "0cy9NYWtlX01vdmllLnB5LC9vbWVyby9pbXBvcnRfc2NyaXB0cy9Qb3B1bGF0"
+        + "ZV9ST0kucHlxL1gDAAAAd2VicTB9cTFYBAAAAGhvc3RxMlgAAAAAcTNzWAcAA"
+        + "ABicm93c2VycTR9cTVYEgAAAHRodW1iX2RlZmF1bHRfc2l6ZXE2S2BzdVgMAA"
+        + "AAYWN0aXZlX2dyb3VwcTdN8QJYCQAAAGNvbm5lY3RvcnE4Y29tZXJvd2ViLmN"
+        + "vbm5lY3RvcgpDb25uZWN0b3IKcTkpgXE6fXE7KFgRAAAAb21lcm9fc2Vzc2lv"
+        + "bl9rZXlxPFgkAAAAZGIyYzkyOGMtNzcyYS00MjJmLTlkZDQtODBmMWI1ODYwO"
+        + "Tc2cT1YBwAAAHVzZXJfaWRxPk1IDlgJAAAAaXNfc2VjdXJlcT+JWAkAAABzZX"
+        + "J2ZXJfaWRxQFgBAAAAMXFBWAkAAABpc19wdWJsaWNxQol1YlgHAAAAdXNlcl9"
+        + "pZHFDTUgOWAYAAABzaGFyZXNxRH1xRVgKAAAAY2FuX2NyZWF0ZXFGiHUu";
+
     @Test
     public void testUnpicklingJDBC() {
         IConnector v = new JDBCPickledSessionConnector(DB_SESSION_DATA);
@@ -126,15 +158,26 @@ public class PickledSessionConnectorTest {
         Assert.assertEquals(v.getUserId(), Long.valueOf(123456672L));
     }
 
-    @Test
-    public void testUnpicklingRedis() {
-        IConnector v = new PickledSessionConnector(
-                Base64.getDecoder().decode(REDIS_SESSION_DATA));
+    private void assertRedisSessionData(IConnector v) {
         Assert.assertEquals(v.getIsSecure(), Boolean.FALSE);
         Assert.assertEquals(v.getServerId(), Long.valueOf(1L));
         Assert.assertEquals(v.getIsPublic(), Boolean.FALSE);
         Assert.assertEquals(
             v.getOmeroSessionKey(), "db2c928c-772a-422f-9dd4-80f1b5860976");
         Assert.assertEquals(v.getUserId(), Long.valueOf(3656L));
+    }
+
+    @Test
+    public void testUnpicklingRedisPy27() {
+        IConnector v = new PickledSessionConnector(
+                Base64.getDecoder().decode(REDIS_SESSION_DATA_PY27));
+        assertRedisSessionData(v);
+    }
+
+    @Test
+    public void testUnpicklingRedisPy3() {
+        IConnector v = new PickledSessionConnector(
+                Base64.getDecoder().decode(REDIS_SESSION_DATA_PY3));
+        assertRedisSessionData(v);
     }
 }
