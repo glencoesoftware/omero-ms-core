@@ -1,18 +1,35 @@
+/*
+ * Copyright (C) 2020 Glencoe Software, Inc. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
 package com.glencoesoftware.omero.ms.core;
 
-import org.testng.annotations.*;
-
 import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import java.util.Arrays;
 import java.util.Base64;
-import org.apache.commons.lang.ArrayUtils;;
+import org.apache.commons.lang.ArrayUtils;
 
 
 public class PickledSessionConnectorTest {
 
-
-String fullLongData = "gAJ9cQEoVQd1c2VyX2lkigBVBnNoYXJlc31VCWNvbm5lY3RvcmNvb"
+    private static final String FULL_LONG_DATA =
+          "gAJ9cQEoVQd1c2VyX2lkigBVBnNoYXJlc31VCWNvbm5lY3RvcmNvb"
         + "WVyb3dlYi5jb25uZWN0b3IKQ29ubmVjdG9yCnECKYFxA31xBChVCWlzX3NlY3VyZX"
         + "EFiVUJc2VydmVyX2lkcQZYAQAAADFVB3VzZXJfaWRxB4oEoMxbB1URb21lcm9fc2V"
         + "zc2lvbl9rZXlxCFUkZGNmNGFmYjYtZmFlOS00YjcxLTkwYjAtNjcyNjJlMWQ0OGM0"
@@ -36,7 +53,8 @@ String fullLongData = "gAJ9cQEoVQd1c2VyX2lkigBVBnNoYXJlc31VCWNvbm5lY3RvcmNvb"
         + "XJvL2ltcG9ydF9zY3JpcHRzL1BvcHVsYXRlX1JPSS5weVUFZW1haWyJVQdicm93c2"
         + "VyfXEXVRJ0aHVtYl9kZWZhdWx0X3NpemVLYHN1VQpjYW5fY3JlYXRliHUu";
 
-String dbSessionData = "ZmNjODgyNGVhNTgzODcyODVkMWQ5ZGI1NzVhYWU1ODgxZjA1NzI4YzqAAn"
+    private static final String DB_SESSION_DATA =
+          "ZmNjODgyNGVhNTgzODcyODVkMWQ5ZGI1NzVhYWU1ODgxZjA1NzI4YzqAAn"
         + "1xAShVB3VzZXJfaWSKAFUGc2hhcmVzfVUJY29ubmVjdG9yY29tZXJvd2ViLmNvbm5"
         + "lY3RvcgpDb25uZWN0b3IKcQIpgXEDfXEEKFUJaXNfc2VjdXJlcQWJVQlzZXJ2ZXJf"
         + "aWRxBlgBAAAAMVUHdXNlcl9pZHEHigBVEW9tZXJvX3Nlc3Npb25fa2V5cQhVJGRjZ"
@@ -63,7 +81,7 @@ String dbSessionData = "ZmNjODgyNGVhNTgzODcyODVkMWQ5ZGI1NzVhYWU1ODgxZjA1NzI4YzqA
 
     @Test
     public void testUnpickling() {
-        byte[] b64bytes = Base64.getDecoder().decode(dbSessionData);
+        byte[] b64bytes = Base64.getDecoder().decode(DB_SESSION_DATA);
         int idx = ArrayUtils.indexOf(b64bytes, (byte)':');
         byte[] sessionData = Arrays.copyOfRange(b64bytes, idx + 1, b64bytes.length);
         IConnector testConnector = new PickledSessionConnector(sessionData);
@@ -76,7 +94,7 @@ String dbSessionData = "ZmNjODgyNGVhNTgzODcyODVkMWQ5ZGI1NzVhYWU1ODgxZjA1NzI4YzqA
 
     @Test
     public void testUnpicklingLong() {
-        byte[] b64bytes = Base64.getDecoder().decode(fullLongData);
+        byte[] b64bytes = Base64.getDecoder().decode(FULL_LONG_DATA);
         int idx = ArrayUtils.indexOf(b64bytes, (byte)':');
         byte[] sessionData = Arrays.copyOfRange(b64bytes, idx + 1, b64bytes.length);
         IConnector testConnector = new PickledSessionConnector(sessionData);
@@ -87,4 +105,3 @@ String dbSessionData = "ZmNjODgyNGVhNTgzODcyODVkMWQ5ZGI1NzVhYWU1ODgxZjA1NzI4YzqA
         Assert.assertEquals(testConnector.getUserId(), Long.valueOf(123456672L));
     }
 }
-;
