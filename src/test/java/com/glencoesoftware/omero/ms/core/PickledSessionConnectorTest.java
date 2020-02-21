@@ -19,9 +19,15 @@
 package com.glencoesoftware.omero.ms.core;
 
 import java.util.Base64;
+import java.util.Iterator;
+import java.util.List;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import com.glencoesoftware.omero.ms.core.PythonPickle.Op;
+
+import io.kaitai.struct.ByteBufferKaitaiStream;
 
 
 public class PickledSessionConnectorTest {
@@ -136,6 +142,23 @@ public class PickledSessionConnectorTest {
         + "J2ZXJfaWRxQFgBAAAAMXFBWAkAAABpc19wdWJsaWNxQol1YlgHAAAAdXNlcl9"
         + "pZHFDTUgOWAYAAABzaGFyZXNxRH1xRVgKAAAAY2FuX2NyZWF0ZXFGiHUu";
 
+    private static String LONG_NONZERO = "gAJ9cQCKAtIESwFzLg==";
+    //python2.7>>> base64.b64encode(pickle.dumps({1234L:1},2))
+
+    private static String LONG_ZERO = "gAJ9cQCKAEsBcy4=";
+    //python2.7>>> base64.b64encode(pickle.dumps({0L:1},2))
+
+    private static String BININT1_TEST = "gAJ9cQBL/0sCcy4=";
+    //python2.7>>> base64.b64encode(pickle.dumps({255:2},2))
+
+    private static String BININT2_TEST = "gAJ9cQBN//9LAnMu";
+    //python2.7>>> base64.b64encode(pickle.dumps({65535:2},2))
+
+    private static String BININT_TEST = "gAJ9cQBKAAABAEsCcy4=";
+    //python2.7>>> base64.b64encode(pickle.dumps({65536:2},2))
+
+    private static String PY3_STRING_TEST = "gAJ9cQBYBAAAAHRlc3RxAVgEAAAAZGljdHECcy4=";
+    //python3>>> base64.b64encode(pickle.dumps({"test": "dict"},2))
     @Test
     public void testUnpicklingJDBC() {
         IConnector v = new JDBCPickledSessionConnector(DB_SESSION_DATA);
@@ -179,5 +202,71 @@ public class PickledSessionConnectorTest {
         IConnector v = new PickledSessionConnector(
                 Base64.getDecoder().decode(REDIS_SESSION_DATA_PY3));
         assertRedisSessionData(v);
+    }
+
+    @Test
+    public void py3StringTest() {
+        byte[] data = Base64.getDecoder().decode(PY3_STRING_TEST);
+        ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
+        PythonPickle pickleData = new PythonPickle(bbks);
+        List<Op> ops = pickleData.ops();
+        Iterator<Op> opIterator = ops.iterator();
+        while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
+        Assert.assertEquals("test", PickledSessionConnector.deserializeStringField((opIterator)));
+    }
+
+    @Test
+    public void nonzeroLongTest() {
+        byte[] data = Base64.getDecoder().decode(LONG_NONZERO);
+        ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
+        PythonPickle pickleData = new PythonPickle(bbks);
+        List<Op> ops = pickleData.ops();
+        Iterator<Op> opIterator = ops.iterator();
+        while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
+        Assert.assertEquals(Long.valueOf(1234L), PickledSessionConnector.deserializeNumberField(opIterator));
+    }
+
+    @Test
+    public void zeroLongTest() {
+        byte[] data = Base64.getDecoder().decode(LONG_ZERO);
+        ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
+        PythonPickle pickleData = new PythonPickle(bbks);
+        List<Op> ops = pickleData.ops();
+        Iterator<Op> opIterator = ops.iterator();
+        while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
+        Assert.assertEquals(Long.valueOf(0L), PickledSessionConnector.deserializeNumberField(opIterator));
+    }
+
+    @Test
+    public void binInt1Test() {
+        byte[] data = Base64.getDecoder().decode(BININT1_TEST);
+        ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
+        PythonPickle pickleData = new PythonPickle(bbks);
+        List<Op> ops = pickleData.ops();
+        Iterator<Op> opIterator = ops.iterator();
+        while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
+        Assert.assertEquals(Long.valueOf(255L), PickledSessionConnector.deserializeNumberField(opIterator));
+    }
+
+    @Test
+    public void binInt2Test() {
+        byte[] data = Base64.getDecoder().decode(BININT2_TEST);
+        ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
+        PythonPickle pickleData = new PythonPickle(bbks);
+        List<Op> ops = pickleData.ops();
+        Iterator<Op> opIterator = ops.iterator();
+        while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
+        Assert.assertEquals(Long.valueOf(65535L), PickledSessionConnector.deserializeNumberField(opIterator));
+    }
+
+    @Test
+    public void binIntTest() {
+        byte[] data = Base64.getDecoder().decode(BININT_TEST);
+        ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
+        PythonPickle pickleData = new PythonPickle(bbks);
+        List<Op> ops = pickleData.ops();
+        Iterator<Op> opIterator = ops.iterator();
+        while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
+        Assert.assertEquals(Long.valueOf(65536L), PickledSessionConnector.deserializeNumberField(opIterator));
     }
 }

@@ -36,7 +36,7 @@ public class PickledSessionConnector implements IConnector {
     private static final org.slf4j.Logger log =
             LoggerFactory.getLogger(PickledSessionConnector.class);
 
-    private static final List<PythonPickle.Opcode> STRING_TYPE_OPCODES =
+    public static final List<PythonPickle.Opcode> STRING_TYPE_OPCODES =
         Arrays.asList(new PythonPickle.Opcode[] {
                 PythonPickle.Opcode.SHORT_BINSTRING,
                 PythonPickle.Opcode.BINUNICODE
@@ -77,7 +77,7 @@ public class PickledSessionConnector implements IConnector {
         }
     }
 
-    private String toString(Object string) {
+    private static String toString(Object string) {
         if (string instanceof PythonPickle.String1) {
             return new String(
                 ((PythonPickle.String1) string).val(),
@@ -123,15 +123,15 @@ public class PickledSessionConnector implements IConnector {
         }
     }
 
-    private void assertStoreOpCode(Iterator<Op> opIterator) {
+    private static void assertStoreOpCode(Iterator<Op> opIterator) {
         Op store = opIterator.next();
         if (store.code() != PythonPickle.Opcode.BINPUT) {
             throw new IllegalArgumentException(
-                    "Unexpected opcode: + " + store.code());
+                    "Unexpected opcode: " + store.code());
         }
     }
 
-    private Boolean deserializeBooleanField(Iterator<Op> opIterator) {
+    public static Boolean deserializeBooleanField(Iterator<Op> opIterator) {
         assertStoreOpCode(opIterator);
         Op value = opIterator.next();
         switch (value.code()) {
@@ -145,7 +145,7 @@ public class PickledSessionConnector implements IConnector {
         }
     }
 
-    private Long longFromBytes(byte[] bytesVal) {
+    public static Long longFromBytes(byte[] bytesVal) {
         if (bytesVal.length == 0) {
             return Long.valueOf(0l);
         }
@@ -155,7 +155,7 @@ public class PickledSessionConnector implements IConnector {
         return Long.valueOf(bigInt.longValue());
     }
 
-    private Long deserializeNumberField(Iterator<Op> opIterator) {
+    public static Long deserializeNumberField(Iterator<Op> opIterator) {
         assertStoreOpCode(opIterator);
         Op value = opIterator.next();
         switch (value.code()) {
@@ -171,7 +171,7 @@ public class PickledSessionConnector implements IConnector {
         }
     }
 
-    private String deserializeStringField(Iterator<Op> opIterator) {
+    public static String deserializeStringField(Iterator<Op> opIterator) {
         assertStoreOpCode(opIterator);
         Op value = opIterator.next();
         if (STRING_TYPE_OPCODES.contains(value.code())) {
