@@ -157,8 +157,18 @@ public class PickledSessionConnectorTest {
     private static String BININT_TEST = "gAJ9cQBKAAABAEsCcy4=";
     //python2.7>>> base64.b64encode(pickle.dumps({65536:2},2))
 
+    private static String SHORT_BINUNICODE_TEST = "gASVEgAAAAAAAAB9lIwEdGVzdJSMBGRpY3SUcy4=";
+    //python3>>> base64.b64encode(pickle.dumps({"test":"dict"},4))
+
     private static String PY3_STRING_TEST = "gAJ9cQBYBAAAAHRlc3RxAVgEAAAAZGljdHECcy4=";
     //python3>>> base64.b64encode(pickle.dumps({"test": "dict"},2))
+
+    private static String UNICODE_TEST = "KGRwMApWdGVzdApwMQpWZGljdApwMgpzLg==";
+    //python2.7>>> base64.b64encode(pickle.dumps({u'test':u'dict'}, 0))
+
+    private static String BINUNICODE8_TEST = "gASVEgAAAAAAAAB9lI0EAAAAAAAAAHRlc3SUjARkaWN0lHMu";
+    //python3>>> base64.b64encode(b'\x80\x04\x95\x12\x00\x00\x00\x00\x00\x00\x00}\x94\x8d\x04\x00\x00\x00\x00\x00\x00\x00test\x94\x8c\x04dict\x94s.')
+
     @Test
     public void testUnpicklingJDBC() {
         IConnector v = new JDBCPickledSessionConnector(DB_SESSION_DATA);
@@ -202,17 +212,6 @@ public class PickledSessionConnectorTest {
         IConnector v = new PickledSessionConnector(
                 Base64.getDecoder().decode(REDIS_SESSION_DATA_PY3));
         assertRedisSessionData(v);
-    }
-
-    @Test
-    public void py3StringTest() {
-        byte[] data = Base64.getDecoder().decode(PY3_STRING_TEST);
-        ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
-        PythonPickle pickleData = new PythonPickle(bbks);
-        List<Op> ops = pickleData.ops();
-        Iterator<Op> opIterator = ops.iterator();
-        while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
-        Assert.assertEquals("test", PickledSessionConnector.deserializeStringField((opIterator)));
     }
 
     @Test
@@ -268,5 +267,49 @@ public class PickledSessionConnectorTest {
         Iterator<Op> opIterator = ops.iterator();
         while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
         Assert.assertEquals(Long.valueOf(65536L), PickledSessionConnector.deserializeNumberField(opIterator));
+    }
+
+    @Test
+    public void py3StringTest() {
+        byte[] data = Base64.getDecoder().decode(PY3_STRING_TEST);
+        ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
+        PythonPickle pickleData = new PythonPickle(bbks);
+        List<Op> ops = pickleData.ops();
+        Iterator<Op> opIterator = ops.iterator();
+        while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
+        Assert.assertEquals("test", PickledSessionConnector.deserializeStringField((opIterator)));
+    }
+
+    @Test
+    public void shortBinUnicodeTest() {
+        byte[] data = Base64.getDecoder().decode(SHORT_BINUNICODE_TEST);
+        ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
+        PythonPickle pickleData = new PythonPickle(bbks);
+        List<Op> ops = pickleData.ops();
+        Iterator<Op> opIterator = ops.iterator();
+        while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
+        Assert.assertEquals("test", PickledSessionConnector.deserializeStringField((opIterator)));
+    }
+
+    @Test
+    public void UnicodeStringtTest() {
+        byte[] data = Base64.getDecoder().decode(UNICODE_TEST);
+        ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
+        PythonPickle pickleData = new PythonPickle(bbks);
+        List<Op> ops = pickleData.ops();
+        Iterator<Op> opIterator = ops.iterator();
+        while(opIterator.next().code() != PythonPickle.Opcode.DICT) {}
+        Assert.assertEquals("test", PickledSessionConnector.deserializeStringField((opIterator)));
+    }
+
+    @Test
+    public void Unicode8StringtTest() {
+        byte[] data = Base64.getDecoder().decode(BINUNICODE8_TEST);
+        ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
+        PythonPickle pickleData = new PythonPickle(bbks);
+        List<Op> ops = pickleData.ops();
+        Iterator<Op> opIterator = ops.iterator();
+        while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
+        Assert.assertEquals("test", PickledSessionConnector.deserializeStringField((opIterator)));
     }
 }

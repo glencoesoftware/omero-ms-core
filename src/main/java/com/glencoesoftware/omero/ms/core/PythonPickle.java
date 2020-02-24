@@ -695,7 +695,7 @@ public class PythonPickle extends KaitaiStruct {
             _read();
         }
         private void _read() {
-            this.len = this._io.readU4le();
+            this.len = this._io.readU1();
             this.val = new String(this._io.readBytes(len()), Charset.forName("utf8"));
         }
         private long len;

@@ -39,7 +39,10 @@ public class PickledSessionConnector implements IConnector {
     public static final List<PythonPickle.Opcode> STRING_TYPE_OPCODES =
         Arrays.asList(new PythonPickle.Opcode[] {
                 PythonPickle.Opcode.SHORT_BINSTRING,
-                PythonPickle.Opcode.BINUNICODE
+                PythonPickle.Opcode.BINUNICODE,
+                PythonPickle.Opcode.SHORT_BINUNICODE,
+                PythonPickle.Opcode.BINUNICODE8,
+                PythonPickle.Opcode.UNICODE
         });
 
     private Long serverId;
@@ -92,6 +95,9 @@ public class PickledSessionConnector implements IConnector {
         if (string instanceof PythonPickle.Unicodestring8) {
             return ((PythonPickle.Unicodestring8) string).val();
         }
+        if (string instanceof PythonPickle.Unicodestringnl) {
+            return ((PythonPickle.Unicodestringnl) string).val();
+        }
         throw new IllegalArgumentException(
             "Unexpected string type: " + string.getClass());
     }
@@ -125,7 +131,9 @@ public class PickledSessionConnector implements IConnector {
 
     private static void assertStoreOpCode(Iterator<Op> opIterator) {
         Op store = opIterator.next();
-        if (store.code() != PythonPickle.Opcode.BINPUT) {
+        if (store.code() != PythonPickle.Opcode.BINPUT
+                && store.code() != PythonPickle.Opcode.MEMOIZE
+                && store.code() != PythonPickle.Opcode.PUT) {
             throw new IllegalArgumentException(
                     "Unexpected opcode: " + store.code());
         }
