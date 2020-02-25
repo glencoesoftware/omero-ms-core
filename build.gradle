@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.glencoesoftware.omero'
-version = '0.4.5'
+version = '0.4.6-SNAPSHOT'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -83,9 +83,9 @@ dependencies {
     compile 'io.zipkin.reporter2:zipkin-sender-okhttp3:2.10.0'
     compile 'io.lettuce:lettuce-core:5.2.0.RELEASE'
     compile 'omero:blitz:5.4.10-ice36-b105'
-    compile 'org.python:jython-standalone:2.7.0'
     compile 'io.vertx:vertx-web:3.8.1'
     compile 'io.vertx:vertx-jdbc-client:3.8.1'
+    compile 'io.kaitai:kaitai-struct-runtime:0.8'
 
     testCompile 'org.testng:testng:6.10'
 }

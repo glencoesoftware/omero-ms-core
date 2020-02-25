@@ -22,14 +22,10 @@ import java.io.IOException;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CompletableFuture;
 import java.util.List;
+import java.util.Arrays;
 import java.util.Base64;
 
-import org.python.core.Py;
-import org.python.core.PyString;
-import org.python.core.PyList;
-import org.python.core.PyDictionary;
-import org.python.core.util.StringUtil;
-import org.python.modules.cPickle;
+import org.apache.commons.lang.ArrayUtils;
 
 import org.slf4j.LoggerFactory;
 
@@ -85,16 +81,7 @@ public class OmeroWebJDBCSessionStore implements OmeroWebSessionStore{
         if (sessionData == null) {
             return null;
         }
-        String decodedSessionData =
-            StringUtil.fromBytes(Base64.getDecoder().decode(sessionData));
-        PyString pystring = Py.newString(decodedSessionData);
-        PyList hash_and_data = pystring.split(":", 1);
-        PyString data_str = new PyString((String) hash_and_data.get(1));
-        PyDictionary djangoSession =
-            (PyDictionary) cPickle.loads(data_str);
-        log.debug("Session: {}", djangoSession);
-        IConnector connector = (IConnector) djangoSession.get("connector");
-        return connector;
+        return new JDBCPickledSessionConnector(sessionData);
     }
 
     /* (non-Javadoc)

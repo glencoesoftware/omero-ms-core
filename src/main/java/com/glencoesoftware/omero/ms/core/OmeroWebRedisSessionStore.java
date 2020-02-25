@@ -19,13 +19,8 @@
 package com.glencoesoftware.omero.ms.core;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.concurrent.CompletionStage;
 
-import org.python.core.Py;
-import org.python.core.PyDictionary;
-import org.python.core.util.StringUtil;
-import org.python.modules.cPickle;
 import org.slf4j.LoggerFactory;
 
 import brave.ScopedSpan;
@@ -89,10 +84,7 @@ public class OmeroWebRedisSessionStore implements OmeroWebSessionStore {
         return future.<IConnector>thenApply(value -> {
             try {
                 if (value != null) {
-                    PyDictionary djangoSession =
-                            (PyDictionary) cPickle.loads(
-                                    Py.newString(StringUtil.fromBytes(value)));
-                    return (IConnector) djangoSession.get("connector");
+                    return new PickledSessionConnector(value);
                 }
             } catch (Exception e) {
                 log.error("Exception while unpickling connector", e);
