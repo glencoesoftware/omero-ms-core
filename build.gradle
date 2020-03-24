@@ -79,6 +79,12 @@ test {
 }
 
 publishing {
+    publications {
+        omeroMsCore(MavenPublication) {
+            from components.java
+        }
+    }
+
     repositories {
         maven {
             name 'gs-omero-snapshots-local'
