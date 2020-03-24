@@ -86,6 +86,7 @@ dependencies {
     compile 'io.vertx:vertx-web:3.8.1'
     compile 'io.vertx:vertx-jdbc-client:3.8.1'
     compile 'io.kaitai:kaitai-struct-runtime:0.8'
+    compile 'org.slf4j:slf4j-api:1.7.30'
 
     testCompile 'org.testng:testng:6.10'
 }
