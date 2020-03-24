@@ -82,7 +82,7 @@ dependencies {
     compile 'io.zipkin.brave:brave-instrumentation-http:5.6.8'
     compile 'io.zipkin.reporter2:zipkin-sender-okhttp3:2.10.0'
     compile 'io.lettuce:lettuce-core:5.2.0.RELEASE'
-    compile 'omero:blitz:5.4.10-ice36-b105'
+    compile 'org.openmicroscopy:omero-blitz:5.5.5'
     compile 'io.vertx:vertx-web:3.8.1'
     compile 'io.vertx:vertx-jdbc-client:3.8.1'
     compile 'io.kaitai:kaitai-struct-runtime:0.8'
