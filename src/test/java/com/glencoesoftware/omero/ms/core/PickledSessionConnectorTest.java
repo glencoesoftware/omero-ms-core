@@ -142,6 +142,35 @@ public class PickledSessionConnectorTest {
         + "J2ZXJfaWRxQFgBAAAAMXFBWAkAAABpc19wdWJsaWNxQol1YlgHAAAAdXNlcl9"
         + "pZHFDTUgOWAYAAABzaGFyZXNxRH1xRVgKAAAAY2FuX2NyZWF0ZXFGiHUu";
 
+    private static String US_DEMO_TEST = "gASVZgQAAAAAAAB9lCiMCWNvbm5lY3"
+            + "RvcpSMEm9tZXJvd2ViLmNvbm5lY3RvcpSMCUNvbm5lY3RvcpSTlCmBlH2"
+            + "UKIwJc2VydmVyX2lklEsBjAlpc19zZWN1cmWUiYwJaXNfcHVibGljlIiM"
+            + "EW9tZXJvX3Nlc3Npb25fa2V5lIwkNDc2ODc5ZTMtMWZhMy00MTQyLWIyM"
+            + "jAtNTE0YmM2ZDQ5YWY3lIwHdXNlcl9pZJRN1gd1YowIY2FsbGJhY2uUfZ"
+            + "SMBnNoYXJlc5R9lIwKY2FuX2NyZWF0ZZSIjA9zZXJ2ZXJfc2V0dGluZ3O"
+            + "UfZQojAJ1aZR9lCiMBHRyZWWUfZQojAdvcnBoYW5zlH2UKIwEbmFtZZSM"
+            + "D09ycGhhbmVkIEltYWdlc5SMB2VuYWJsZWSUiIwLZGVzY3JpcHRpb26Uj"
+            + "IFUaGlzIGlzIGEgdmlydHVhbCBjb250YWluZXIgd2l0aCBvcnBoYW5lZC"
+            + "BpbWFnZXMuIFRoZXNlIGltYWdlcyBhcmUgbm90IGxpbmtlZCBhbnl3aGV"
+            + "yZS4gSnVzdCBkcmFnIHRoZW0gdG8gdGhlIHNlbGVjdGVkIGNvbnRhaW5l"
+            + "ci6UdYwKdHlwZV9vcmRlcpSMOXRhZ3NldCx0YWcscHJvamVjdCxkYXRhc"
+            + "2V0LHNjcmVlbixwbGF0ZSxhY3F1aXNpdGlvbixpbWFnZZR1jARtZW51lH"
+            + "2UjAhkcm9wZG93bpR9lCiMCmNvbGxlYWd1ZXOUfZQojAVsYWJlbJSMB01"
+            + "lbWJlcnOUjAdlbmFibGVklIh1jAdsZWFkZXJzlH2UKIwHZW5hYmxlZJSI"
+            + "jAVsYWJlbJSMBk93bmVyc5R1jAhldmVyeW9uZZR9lCiMBWxhYmVslIwLQ"
+            + "WxsIE1lbWJlcnOUjAdlbmFibGVklIh1dXN1jAdicm93c2VylH2UjBJ0aH"
+            + "VtYl9kZWZhdWx0X3NpemWUS2BzjAZ2aWV3ZXKUfZQojBJpbml0aWFsX3p"
+            + "vb21fbGV2ZWyUSwCMCXJvaV9saW1pdJRN0AeMEmludGVycG9sYXRlX3Bp"
+            + "eGVsc5SIdYwLZG93bmxvYWRfYXOUfZSMCG1heF9zaXpllEoARJUIc4wDd"
+            + "2VilH2UjARob3N0lIwAlHOMEXNjcmlwdHNfdG9faWdub3JllIzuL29tZX"
+            + "JvL2ZpZ3VyZV9zY3JpcHRzL01vdmllX0ZpZ3VyZS5weSwvb21lcm8vZml"
+            + "ndXJlX3NjcmlwdHMvU3BsaXRfVmlld19GaWd1cmUucHksL29tZXJvL2Zp"
+            + "Z3VyZV9zY3JpcHRzL1RodW1ibmFpbF9GaWd1cmUucHksL29tZXJvL2ZpZ"
+            + "3VyZV9zY3JpcHRzL1JPSV9TcGxpdF9GaWd1cmUucHksL29tZXJvL2V4cG"
+            + "9ydF9zY3JpcHRzL01ha2VfTW92aWUucHksL29tZXJvL2ltcG9ydF9zY3J"
+            + "pcHRzL1BvcHVsYXRlX1JPSS5weZSMBWVtYWlslIl1jAd1c2VyX2lklE3W"
+            + "B3Uu";
+
     private static String LONG_NONZERO = "gAJ9cQCKAtIESwFzLg==";
     //python2.7>>> base64.b64encode(pickle.dumps({1234L:1},2))
 
@@ -212,6 +241,18 @@ public class PickledSessionConnectorTest {
         IConnector v = new PickledSessionConnector(
                 Base64.getDecoder().decode(REDIS_SESSION_DATA_PY3));
         assertRedisSessionData(v);
+    }
+
+    @Test
+    public void testRedisWithNumericalServerId() {
+        IConnector v = new PickledSessionConnector(
+                Base64.getDecoder().decode(US_DEMO_TEST));
+        Assert.assertEquals(v.getIsSecure(), Boolean.FALSE);
+        Assert.assertEquals(v.getServerId(), Long.valueOf(1L));
+        Assert.assertEquals(v.getIsPublic(), Boolean.TRUE);
+        Assert.assertEquals(
+            v.getOmeroSessionKey(), "476879e3-1fa3-4142-b220-514bc6d49af7");
+        Assert.assertEquals(v.getUserId(), Long.valueOf(2006l));
     }
 
     @Test

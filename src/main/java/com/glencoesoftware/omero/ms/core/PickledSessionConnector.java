@@ -112,8 +112,7 @@ public class PickledSessionConnector implements IConnector {
                         isSecure = deserializeBooleanField(opIterator);
                         break;
                     case "server_id":
-                        serverId = Long.parseLong(
-                                deserializeStringField(opIterator));
+                        serverId = deserializeServerId(opIterator);
                         break;
                     case "user_id":
                         userId = deserializeNumberField(opIterator);
@@ -166,6 +165,25 @@ public class PickledSessionConnector implements IConnector {
     public static Long deserializeNumberField(Iterator<Op> opIterator) {
         assertStoreOpCode(opIterator);
         Op value = opIterator.next();
+        switch (value.code()) {
+            case BININT:
+            case BININT1:
+            case BININT2:
+                return new Long((Integer) value.arg());
+            case LONG1:
+                return longFromBytes(((PythonPickle.Long1) value.arg()).val());
+            default:
+                throw new IllegalArgumentException(
+                        "Unexpected opcode for number field: " + value.code());
+        }
+    }
+
+    public static Long deserializeServerId(Iterator<Op> opIterator) {
+        assertStoreOpCode(opIterator);
+        Op value = opIterator.next();
+        if (STRING_TYPE_OPCODES.contains(value.code())) {
+            return Long.parseLong(toString(value.arg()));
+        }
         switch (value.code()) {
             case BININT:
             case BININT1:
