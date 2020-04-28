@@ -107,22 +107,28 @@ public class PickledSessionConnector implements IConnector {
             Op op = opIterator.next();
             if (STRING_TYPE_OPCODES.contains(op.code())) {
                 String fieldName = toString(op.arg());
-                switch (fieldName) {
-                    case "is_secure":
-                        isSecure = deserializeBooleanField(opIterator);
-                        break;
-                    case "server_id":
-                        serverId = deserializeServerId(opIterator);
-                        break;
-                    case "user_id":
-                        userId = deserializeNumberField(opIterator);
-                        break;
-                    case "omero_session_key":
-                        omeroSessionKey = deserializeStringField(opIterator);
-                        break;
-                    case "is_public":
-                        isPublic = deserializeBooleanField(opIterator);
-                        break;
+                try {
+                    switch (fieldName) {
+                        case "is_secure":
+                            isSecure = deserializeBooleanField(opIterator);
+                            break;
+                        case "server_id":
+                            serverId = deserializeServerId(opIterator);
+                            break;
+                        case "user_id":
+                            userId = deserializeNumberField(opIterator);
+                            break;
+                        case "omero_session_key":
+                            omeroSessionKey =
+                                deserializeStringField(opIterator);
+                            break;
+                        case "is_public":
+                            isPublic = deserializeBooleanField(opIterator);
+                            break;
+                    }
+                } catch (Exception e) {
+                    log.error("Exception while deserializing: {}", fieldName);
+                    throw e;
                 }
             }
         }
