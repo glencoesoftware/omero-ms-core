@@ -128,6 +128,21 @@ public class PickledSessionConnector implements IConnector {
         }
     }
 
+    private Long deserializeServerId(Iterator<Op> opIterator) {
+        assertStoreOpCode(opIterator);
+        Op value = opIterator.next();
+        String asString = handleStringValue(value, false);
+        if (asString != null) {
+            return Long.valueOf(asString);
+        }
+        Long asLong = handleNumberValue(value, false);
+        if (asLong == null) {
+            throw new IllegalArgumentException(
+                    "Unexpected opcode for serverId: " + value.code());
+        }
+        return asLong;
+    }
+
     private static void assertStoreOpCode(Iterator<Op> opIterator) {
         Op store = opIterator.next();
         if (store.code() != PythonPickle.Opcode.BINPUT
@@ -140,15 +155,22 @@ public class PickledSessionConnector implements IConnector {
 
     public static Boolean deserializeBooleanField(Iterator<Op> opIterator) {
         assertStoreOpCode(opIterator);
-        Op value = opIterator.next();
+        return handleBooleanValue(opIterator.next(), true);
+    }
+
+    public static Boolean handleBooleanValue(
+            Op value, boolean throwOnUnexpected) {
         switch (value.code()) {
             case NEWTRUE:
                 return true;
             case NEWFALSE:
                 return false;
             default:
-                throw new IllegalArgumentException(
+                if (throwOnUnexpected) {
+                    throw new IllegalArgumentException(
                         "Unexpected opcode for boolean field: " + value.code());
+                }
+                return null;
         }
     }
 
@@ -164,26 +186,10 @@ public class PickledSessionConnector implements IConnector {
 
     public static Long deserializeNumberField(Iterator<Op> opIterator) {
         assertStoreOpCode(opIterator);
-        Op value = opIterator.next();
-        switch (value.code()) {
-            case BININT:
-            case BININT1:
-            case BININT2:
-                return new Long((Integer) value.arg());
-            case LONG1:
-                return longFromBytes(((PythonPickle.Long1) value.arg()).val());
-            default:
-                throw new IllegalArgumentException(
-                        "Unexpected opcode for number field: " + value.code());
-        }
+        return handleNumberValue(opIterator.next(), true);
     }
 
-    public static Long deserializeServerId(Iterator<Op> opIterator) {
-        assertStoreOpCode(opIterator);
-        Op value = opIterator.next();
-        if (STRING_TYPE_OPCODES.contains(value.code())) {
-            return Long.parseLong(toString(value.arg()));
-        }
+    public static Long handleNumberValue(Op value, boolean throwOnUnexpected) {
         switch (value.code()) {
             case BININT:
             case BININT1:
@@ -192,19 +198,29 @@ public class PickledSessionConnector implements IConnector {
             case LONG1:
                 return longFromBytes(((PythonPickle.Long1) value.arg()).val());
             default:
-                throw new IllegalArgumentException(
+                if (throwOnUnexpected) {
+                    throw new IllegalArgumentException(
                         "Unexpected opcode for number field: " + value.code());
+                }
+                return null;
         }
     }
 
     public static String deserializeStringField(Iterator<Op> opIterator) {
         assertStoreOpCode(opIterator);
-        Op value = opIterator.next();
+        return handleStringValue(opIterator.next(), true);
+    }
+
+    public static String handleStringValue(
+            Op value, boolean throwOnUnexpected) {
+        String v = null;
         if (STRING_TYPE_OPCODES.contains(value.code())) {
-            return toString(value.arg());
+            v = toString(value.arg());
+        } else if (throwOnUnexpected) {
+            throw new IllegalArgumentException(
+                    "Unexpected opcode for string field: " + value.code());
         }
-        throw new IllegalArgumentException(
-                "Unexpected opcode for string field: " + value.code());
+        return v;
     }
 
     @Override
