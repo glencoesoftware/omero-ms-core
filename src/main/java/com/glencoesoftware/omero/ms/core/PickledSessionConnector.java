@@ -107,26 +107,46 @@ public class PickledSessionConnector implements IConnector {
             Op op = opIterator.next();
             if (STRING_TYPE_OPCODES.contains(op.code())) {
                 String fieldName = toString(op.arg());
-                switch (fieldName) {
-                    case "is_secure":
-                        isSecure = deserializeBooleanField(opIterator);
-                        break;
-                    case "server_id":
-                        serverId = Long.parseLong(
-                                deserializeStringField(opIterator));
-                        break;
-                    case "user_id":
-                        userId = deserializeNumberField(opIterator);
-                        break;
-                    case "omero_session_key":
-                        omeroSessionKey = deserializeStringField(opIterator);
-                        break;
-                    case "is_public":
-                        isPublic = deserializeBooleanField(opIterator);
-                        break;
+                try {
+                    switch (fieldName) {
+                        case "is_secure":
+                            isSecure = deserializeBooleanField(opIterator);
+                            break;
+                        case "server_id":
+                            serverId = deserializeServerId(opIterator);
+                            break;
+                        case "user_id":
+                            userId = deserializeNumberField(opIterator);
+                            break;
+                        case "omero_session_key":
+                            omeroSessionKey =
+                                deserializeStringField(opIterator);
+                            break;
+                        case "is_public":
+                            isPublic = deserializeBooleanField(opIterator);
+                            break;
+                    }
+                } catch (Exception e) {
+                    log.error("Exception while deserializing: {}", fieldName);
+                    throw e;
                 }
             }
         }
+    }
+
+    private Long deserializeServerId(Iterator<Op> opIterator) {
+        assertStoreOpCode(opIterator);
+        Op value = opIterator.next();
+        String asString = handleStringValue(value, false);
+        if (asString != null) {
+            return Long.valueOf(asString);
+        }
+        Long asLong = handleNumberValue(value, false);
+        if (asLong == null) {
+            throw new IllegalArgumentException(
+                    "Unexpected opcode for serverId: " + value.code());
+        }
+        return asLong;
     }
 
     private static void assertStoreOpCode(Iterator<Op> opIterator) {
@@ -141,15 +161,22 @@ public class PickledSessionConnector implements IConnector {
 
     public static Boolean deserializeBooleanField(Iterator<Op> opIterator) {
         assertStoreOpCode(opIterator);
-        Op value = opIterator.next();
+        return handleBooleanValue(opIterator.next(), true);
+    }
+
+    public static Boolean handleBooleanValue(
+            Op value, boolean throwOnUnexpected) {
         switch (value.code()) {
             case NEWTRUE:
                 return true;
             case NEWFALSE:
                 return false;
             default:
-                throw new IllegalArgumentException(
+                if (throwOnUnexpected) {
+                    throw new IllegalArgumentException(
                         "Unexpected opcode for boolean field: " + value.code());
+                }
+                return null;
         }
     }
 
@@ -165,7 +192,10 @@ public class PickledSessionConnector implements IConnector {
 
     public static Long deserializeNumberField(Iterator<Op> opIterator) {
         assertStoreOpCode(opIterator);
-        Op value = opIterator.next();
+        return handleNumberValue(opIterator.next(), true);
+    }
+
+    public static Long handleNumberValue(Op value, boolean throwOnUnexpected) {
         switch (value.code()) {
             case BININT:
             case BININT1:
@@ -174,19 +204,29 @@ public class PickledSessionConnector implements IConnector {
             case LONG1:
                 return longFromBytes(((PythonPickle.Long1) value.arg()).val());
             default:
-                throw new IllegalArgumentException(
+                if (throwOnUnexpected) {
+                    throw new IllegalArgumentException(
                         "Unexpected opcode for number field: " + value.code());
+                }
+                return null;
         }
     }
 
     public static String deserializeStringField(Iterator<Op> opIterator) {
         assertStoreOpCode(opIterator);
-        Op value = opIterator.next();
+        return handleStringValue(opIterator.next(), true);
+    }
+
+    public static String handleStringValue(
+            Op value, boolean throwOnUnexpected) {
+        String v = null;
         if (STRING_TYPE_OPCODES.contains(value.code())) {
-            return toString(value.arg());
+            v = toString(value.arg());
+        } else if (throwOnUnexpected) {
+            throw new IllegalArgumentException(
+                    "Unexpected opcode for string field: " + value.code());
         }
-        throw new IllegalArgumentException(
-                "Unexpected opcode for string field: " + value.code());
+        return v;
     }
 
     @Override
