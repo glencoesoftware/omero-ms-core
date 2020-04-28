@@ -244,7 +244,7 @@ public class PickledSessionConnectorTest {
     }
 
     @Test
-    public void testRedisWithNumericalServerId() {
+    public void testUnpicklingRedisWithNumericalServerId() {
         IConnector v = new PickledSessionConnector(
                 Base64.getDecoder().decode(US_DEMO_TEST));
         Assert.assertEquals(v.getIsSecure(), Boolean.FALSE);
@@ -352,5 +352,38 @@ public class PickledSessionConnectorTest {
         Iterator<Op> opIterator = ops.iterator();
         while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
         Assert.assertEquals("test", PickledSessionConnector.deserializeStringField((opIterator)));
+    }
+
+    @Test(expectedExceptions={IllegalArgumentException.class})
+    public void testBooleanUnexpectedOpCode() {
+        byte[] data = Base64.getDecoder().decode(UNICODE_TEST);
+        ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
+        PythonPickle pickleData = new PythonPickle(bbks);
+        List<Op> ops = pickleData.ops();
+        Iterator<Op> opIterator = ops.iterator();
+        while(opIterator.next().code() != PythonPickle.Opcode.DICT) {}
+        PickledSessionConnector.deserializeBooleanField((opIterator));
+    }
+
+    @Test(expectedExceptions={IllegalArgumentException.class})
+    public void testNumberUnexpectedOpCode() {
+        byte[] data = Base64.getDecoder().decode(UNICODE_TEST);
+        ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
+        PythonPickle pickleData = new PythonPickle(bbks);
+        List<Op> ops = pickleData.ops();
+        Iterator<Op> opIterator = ops.iterator();
+        while(opIterator.next().code() != PythonPickle.Opcode.DICT) {}
+        PickledSessionConnector.deserializeNumberField((opIterator));
+    }
+
+    @Test(expectedExceptions={IllegalArgumentException.class})
+    public void testStringUnexpectedOpCode() {
+        byte[] data = Base64.getDecoder().decode(LONG_NONZERO);
+        ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
+        PythonPickle pickleData = new PythonPickle(bbks);
+        List<Op> ops = pickleData.ops();
+        Iterator<Op> opIterator = ops.iterator();
+        while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
+        PickledSessionConnector.deserializeStringField((opIterator));
     }
 }
