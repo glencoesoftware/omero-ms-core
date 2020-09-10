@@ -24,6 +24,7 @@ import java.util.Map;
 import brave.Tracing;
 import brave.propagation.Propagation.Setter;
 import brave.propagation.TraceContext.Injector;
+import io.vertx.core.MultiMap;
 
 /**
  * A context object which is designed to be subclassed and passed as a
@@ -60,4 +61,15 @@ public abstract class OmeroRequestCtx {
         injector.inject(
                 Tracing.currentTracer().currentSpan().context(), traceContext);
     }
+
+
+    protected String getCheckedParam(MultiMap params, String key)
+            throws IllegalArgumentException {
+            String value = params.get(key);
+            if (null == value) {
+                throw new IllegalArgumentException("Missing parameter '"
+                    + key + "'");
+            }
+            return value;
+        }
 }
