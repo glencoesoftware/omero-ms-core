@@ -75,6 +75,14 @@ public class OmeroRequest implements Closeable {
                 ServerError {
         log.debug("Connecting to the server: {}, {}, {}",
                 host, port, omeroSessionKey);
+        // Guard against bad input that may cause us big problems later
+        if (host == null || port < 1) {
+            throw new IllegalArgumentException(
+                    "Misconfigured OMERO server host and/or port");
+        }
+        if (omeroSessionKey == null) {
+            throw new PermissionDeniedException("Missing OMERO session key!");
+        }
         this.omeroSessionKey = omeroSessionKey;
         this.client = new omero.client(host, port);
         Tracer tracer = Tracing.currentTracer();

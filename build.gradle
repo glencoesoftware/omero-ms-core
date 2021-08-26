@@ -17,7 +17,7 @@ repositories {
         url 'https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases'
     }
     maven {
-        url 'https://artifacts.openmicroscopy.org/artifactory/maven/'
+        url 'https://artifacts.glencoesoftware.com/artifactory/ome.releases'
     }
 }
 
