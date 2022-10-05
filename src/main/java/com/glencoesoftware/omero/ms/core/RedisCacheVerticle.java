@@ -19,8 +19,6 @@
 package com.glencoesoftware.omero.ms.core;
 
 
-import java.util.function.BiConsumer;
-
 import org.perf4j.StopWatch;
 import org.perf4j.slf4j.Slf4JStopWatch;
 import org.slf4j.LoggerFactory;
@@ -32,7 +30,6 @@ import com.lambdaworks.redis.api.async.RedisAsyncCommands;
 import com.lambdaworks.redis.codec.ByteArrayCodec;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 
@@ -72,18 +69,12 @@ public class RedisCacheVerticle extends AbstractVerticle {
         }
 
         vertx.eventBus().<String>consumer(
-                REDIS_CACHE_GET_EVENT, new Handler<Message<String>>() {
-                    @Override
-                    public void handle(Message<String> event) {
-                        get(event);
-                    }
+                REDIS_CACHE_GET_EVENT, event -> {
+                    get(event);
                 });
         vertx.eventBus().<JsonObject>consumer(
-                REDIS_CACHE_SET_EVENT, new Handler<Message<JsonObject>>() {
-                    @Override
-                    public void handle(Message<JsonObject> event) {
-                        set(event);
-                    }
+                REDIS_CACHE_SET_EVENT, event -> {
+                    set(event);
                 });
     }
 
@@ -108,21 +99,18 @@ public class RedisCacheVerticle extends AbstractVerticle {
         final StopWatch t0 = new Slf4JStopWatch("get");
         // Binary retrieval, get(String) includes a UTF-8 step
         RedisFuture<byte[]> future = commands.get(key.getBytes());
-        future.whenComplete(new BiConsumer<byte[], Throwable>() {
-            @Override
-            public void accept(byte[] v, Throwable t) {
-                try {
-                    if (t != null) {
-                        log.error("Exception while getting cache value", t);
-                        message.fail(500, t.getMessage());
-                        return;
-                    }
-                    message.reply(v);
-                } finally {
-                    t0.stop();
+        future.whenComplete((v, t) -> {
+            try {
+                if (t != null) {
+                    log.error("Exception while getting cache value", t);
+                    message.fail(500, t.getMessage());
+                    return;
                 }
+                message.reply(v);
+            } finally {
+                t0.stop();
             }
-    });
+        });
     }
 
     /**
@@ -148,23 +136,20 @@ public class RedisCacheVerticle extends AbstractVerticle {
         final StopWatch t0 = new Slf4JStopWatch("set");
         // Binary retrieval, get(String) includes a UTF-8 step
         RedisFuture<String> future = commands.set(key.getBytes(), value);
-        future.whenComplete(new BiConsumer<String, Throwable>() {
-            @Override
-            public void accept(String v, Throwable t) {
-                try {
-                    if (t != null) {
-                        log.error("Exception while setting cache value", t);
-                        message.fail(500, t.getMessage());
-                        return;
-                    }
-                    if (!"OK".equals(v)) {
-                        message.fail(500, "Non OK reply: " + v);
-                        return;
-                    }
-                    message.reply(null);
-                } finally {
-                    t0.stop();
+        future.whenComplete((v, t) -> {
+            try {
+                if (t != null) {
+                    log.error("Exception while setting cache value", t);
+                    message.fail(500, t.getMessage());
+                    return;
                 }
+                if (!"OK".equals(v)) {
+                    message.fail(500, "Non OK reply: " + v);
+                    return;
+                }
+                message.reply(null);
+            } finally {
+                t0.stop();
             }
         });
     }
