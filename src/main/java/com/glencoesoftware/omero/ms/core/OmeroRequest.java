@@ -19,13 +19,14 @@
 package com.glencoesoftware.omero.ms.core;
 
 import java.io.Closeable;
-
-import org.perf4j.StopWatch;
-import org.perf4j.slf4j.Slf4JStopWatch;
 import org.slf4j.LoggerFactory;
 
 import Glacier2.CannotCreateSessionException;
 import Glacier2.PermissionDeniedException;
+import brave.ScopedSpan;
+import brave.Span;
+import brave.Tracer;
+import brave.Tracing;
 import omero.ServerError;
 
 
@@ -45,6 +46,13 @@ public class OmeroRequest implements Closeable {
 
     /** OMERO client. */
     private final omero.client client;
+
+    /**
+     * Close session span which will be started and finished during
+     * {@link #close()}.  This is important as the outermost enclosing span
+     * may be finished by the time {@link #close()} is called.
+     */
+    private final Span closeSessionSpan;
 
     /**
      * Default constructor. The session is joined once the instance has been
@@ -67,14 +75,25 @@ public class OmeroRequest implements Closeable {
                 ServerError {
         log.debug("Connecting to the server: {}, {}, {}",
                 host, port, omeroSessionKey);
+        // Guard against bad input that may cause us big problems later
+        if (host == null || port < 1) {
+            throw new IllegalArgumentException(
+                    "Misconfigured OMERO server host and/or port");
+        }
+        if (omeroSessionKey == null) {
+            throw new PermissionDeniedException("Missing OMERO session key!");
+        }
         this.omeroSessionKey = omeroSessionKey;
         this.client = new omero.client(host, port);
-        StopWatch t0 = new Slf4JStopWatch("joinSession");
+        Tracer tracer = Tracing.currentTracer();
+        ScopedSpan span = tracer.startScopedSpan("join_omero_session");
+        closeSessionSpan = tracer.nextSpan().name("close_omero_session");
+        span.tag("omero.session_key", omeroSessionKey);
         try {
             client.joinSession(omeroSessionKey).detachOnDestroy();
             log.debug("Successfully joined session: {}", omeroSessionKey);
         } finally {
-            t0.stop();
+            span.finish();
         }
     }
 
@@ -96,14 +115,15 @@ public class OmeroRequest implements Closeable {
      */
     @Override
     public void close() {
-        StopWatch t0 = new Slf4JStopWatch("closeSession");
+        closeSessionSpan.start();
         try {
             client.closeSession();
             log.debug("Successfully closed session: {}", omeroSessionKey);
         } catch (Exception e) {
+            closeSessionSpan.error(e);
             log.error("Exception while closing session: {}", omeroSessionKey);
         } finally {
-            t0.stop();
+            closeSessionSpan.finish();
         }
     }
 

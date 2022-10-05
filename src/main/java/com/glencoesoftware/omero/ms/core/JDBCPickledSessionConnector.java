@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Glencoe Software, Inc. All rights reserved.
+ * Copyright (C) 2020 Glencoe Software, Inc. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,23 +18,23 @@
 
 package com.glencoesoftware.omero.ms.core;
 
-import java.io.Closeable;
-import java.util.concurrent.CompletionStage;
+import java.util.Arrays;
+import java.util.Base64;
 
-/**
- * An OMERO.web session store.
- * @author Chris Allan <callan@glencoesoftware.com>
- *
- */
-public interface OmeroWebSessionStore extends Closeable {
+import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.LoggerFactory;
 
-    /**
-     * Retrieve the OMERO.web session's current
-     * <code>omeroweb.connector.Connector</code>.
-     * @param sessionKey Session key to retrieve a connector for.
-     * @return A new {@link CompletionStage} that, when the {@link IConnector}
-     * retrieval is complete is executed.
-     */
-    CompletionStage<IConnector> getConnector(String sessionKey);
+public class JDBCPickledSessionConnector extends PickledSessionConnector {
+
+    private static final org.slf4j.Logger log =
+            LoggerFactory.getLogger(JDBCPickledSessionConnector.class);
+
+    public JDBCPickledSessionConnector(String serialized) {
+        byte[] b64bytes = Base64.getDecoder().decode(serialized);
+        int idx = ArrayUtils.indexOf(b64bytes, (byte)':');
+        byte[] sessionData = Arrays.copyOfRange(
+                b64bytes, idx + 1, b64bytes.length);
+        init(sessionData);
+    }
 
 }

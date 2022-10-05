@@ -10,7 +10,7 @@ build_script:
   - gradlew -PArtifactoryUserName=%ARTIFACTORY_USERNAME% -PArtifactoryPassword=%ARTIFACTORY_PASSWORD% build
 
 after_test:
-  - IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER gradlew -PArtifactoryUserName=%ARTIFACTORY_USERNAME% -PArtifactoryPassword=%ARTIFACTORY_PASSWORD% uploadArchives
+  - IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER gradlew -PArtifactoryUserName=%ARTIFACTORY_USERNAME% -PArtifactoryPassword=%ARTIFACTORY_PASSWORD% publish
 
 cache:
   - '%HOME%\.gradle -> build.gradle'

@@ -19,16 +19,15 @@
 package com.glencoesoftware.omero.ms.core;
 
 
-import org.perf4j.StopWatch;
-import org.perf4j.slf4j.Slf4JStopWatch;
 import org.slf4j.LoggerFactory;
 
-import com.lambdaworks.redis.RedisClient;
-import com.lambdaworks.redis.RedisFuture;
-import com.lambdaworks.redis.api.StatefulRedisConnection;
-import com.lambdaworks.redis.api.async.RedisAsyncCommands;
-import com.lambdaworks.redis.codec.ByteArrayCodec;
-
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisFuture;
+import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.api.async.RedisAsyncCommands;
+import io.lettuce.core.codec.ByteArrayCodec;
+import brave.ScopedSpan;
+import brave.Tracing;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
@@ -78,6 +77,12 @@ public class RedisCacheVerticle extends AbstractVerticle {
                 });
     }
 
+    @Override
+    public void stop() {
+        connection.close();
+        client.shutdown();
+    }
+
     /**
      * Get a key from the cache.
      */
@@ -96,7 +101,8 @@ public class RedisCacheVerticle extends AbstractVerticle {
         log.debug("Getting cache key: {}", key);
 
         RedisAsyncCommands<byte[], byte[]> commands = connection.async();
-        final StopWatch t0 = new Slf4JStopWatch("get");
+        ScopedSpan span = Tracing.currentTracer().startScopedSpan("get_redis_cache");
+        span.tag("key", key);
         // Binary retrieval, get(String) includes a UTF-8 step
         RedisFuture<byte[]> future = commands.get(key.getBytes());
         future.whenComplete((v, t) -> {
@@ -108,7 +114,7 @@ public class RedisCacheVerticle extends AbstractVerticle {
                 }
                 message.reply(v);
             } finally {
-                t0.stop();
+                span.finish();
             }
         });
     }
@@ -133,7 +139,8 @@ public class RedisCacheVerticle extends AbstractVerticle {
         log.debug("Setting cache key: {}", key);
 
         RedisAsyncCommands<byte[], byte[]> commands = connection.async();
-        final StopWatch t0 = new Slf4JStopWatch("set");
+        ScopedSpan span = Tracing.currentTracer().startScopedSpan("set_redis_cache");
+        span.tag("key", key);
         // Binary retrieval, get(String) includes a UTF-8 step
         RedisFuture<String> future = commands.set(key.getBytes(), value);
         future.whenComplete((v, t) -> {
@@ -149,7 +156,7 @@ public class RedisCacheVerticle extends AbstractVerticle {
                 }
                 message.reply(null);
             } finally {
-                t0.stop();
+                span.finish();
             }
         });
     }
