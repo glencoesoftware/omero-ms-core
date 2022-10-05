@@ -19,27 +19,27 @@
 package com.glencoesoftware.omero.ms.core;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.concurrent.CompletionStage;
 
+import org.perf4j.StopWatch;
+import org.perf4j.slf4j.Slf4JStopWatch;
 import org.python.core.Py;
 import org.python.core.PyDictionary;
 import org.python.core.util.StringUtil;
 import org.python.modules.cPickle;
 import org.slf4j.LoggerFactory;
 
-import brave.ScopedSpan;
-import brave.Tracing;
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.RedisFuture;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.async.RedisAsyncCommands;
-import io.lettuce.core.codec.ByteArrayCodec;
+import com.lambdaworks.redis.RedisClient;
+import com.lambdaworks.redis.RedisFuture;
+import com.lambdaworks.redis.api.StatefulRedisConnection;
+import com.lambdaworks.redis.api.async.RedisAsyncCommands;
+import com.lambdaworks.redis.api.sync.RedisCommands;
+import com.lambdaworks.redis.codec.ByteArrayCodec;
 
 /**
  * A Redis backed OMERO.web session store. Based on a provided session key,
  * retrieves the Python pickled session and then utilizes Jython to unpickle
- * the current OMERO.web connector.
+ * the current OMERO.web connector. 
  * @author Chris Allan <callan@glencoesoftware.com>
  *
  */
@@ -70,10 +70,37 @@ public class OmeroWebRedisSessionStore implements OmeroWebSessionStore {
     }
 
     /* (non-Javadoc)
-     * @see com.glencoesoftware.omero.ms.core.OmeroWebSessionStore#getConnector(java.lang.String, com.glencoesoftware.omero.ms.core.ConnectorHandler)
+     * @see com.glencoesoftware.omero.ms.core.OmeroWebSessionStore#getConnector(java.lang.String)
      */
-    @Override
-    public CompletionStage<IConnector> getConnector(String sessionKey) {
+    public IConnector getConnector(String sessionKey) {
+        StopWatch t0 = new Slf4JStopWatch("getConnector");
+        try {
+            byte[] pickledDjangoSession = null;
+            RedisCommands<byte[], byte[]> commands = connection.sync();
+            String key = String.format(
+                    KEY_FORMAT,
+                    "",  // OMERO_WEB_CACHE_KEY_PREFIX
+                    1,  // OMERO_WEB_CACHE_VERSION
+                    sessionKey);
+            // Binary retrieval, get(String) includes a UTF-8 step
+            pickledDjangoSession = commands.get(key.getBytes());
+            if (pickledDjangoSession == null) {
+                return null;
+            }
+
+            PyDictionary djangoSession = (PyDictionary) cPickle.loads(
+                    Py.newString(StringUtil.fromBytes(pickledDjangoSession)));
+            log.debug("Session: {}", djangoSession);
+            return (IConnector) djangoSession.get("connector");
+        } finally {
+            t0.stop();
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see com.glencoesoftware.omero.ms.core.OmeroWebSessionStore#getConnectorAsync(java.lang.String, com.glencoesoftware.omero.ms.core.ConnectorHandler)
+     */
+    public CompletionStage<IConnector> getConnectorAsync(String sessionKey) {
         RedisAsyncCommands<byte[], byte[]> commands = connection.async();
         String key = String.format(
                 KEY_FORMAT,
@@ -82,8 +109,7 @@ public class OmeroWebRedisSessionStore implements OmeroWebSessionStore {
                 sessionKey);
         log.debug("Retrieving OMERO.web session with key: {}", key);
 
-        ScopedSpan span = Tracing.currentTracer().startScopedSpan("get_connector_redis_async");
-        span.tag("omero_web.session_key", sessionKey);
+        final StopWatch t0 = new Slf4JStopWatch("getConnectorAsync");
         // Binary retrieval, get(String) includes a UTF-8 step
         RedisFuture<byte[]> future = commands.get(key.getBytes());
         return future.<IConnector>thenApply(value -> {
@@ -97,11 +123,8 @@ public class OmeroWebRedisSessionStore implements OmeroWebSessionStore {
             } catch (Exception e) {
                 log.error("Exception while unpickling connector", e);
             } finally {
-                span.finish();
+                t0.stop();
             }
-            return null;
-        }).exceptionally(t -> {
-            log.error(t.getMessage(), t);
             return null;
         });
     }
@@ -109,7 +132,6 @@ public class OmeroWebRedisSessionStore implements OmeroWebSessionStore {
     @Override
     public void close() throws IOException {
         connection.close();
-        client.shutdown();
     }
 
 }
