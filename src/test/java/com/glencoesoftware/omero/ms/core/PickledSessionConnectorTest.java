@@ -171,6 +171,10 @@ public class PickledSessionConnectorTest {
             + "pcHRzL1BvcHVsYXRlX1JPSS5weZSMBWVtYWlslIl1jAd1c2VyX2lklE3W"
             + "B3Uu";
 
+    /**
+     * Full user session which uses LONG_BINPUT opcodes and has two "user_id"
+     * dictionary keys.
+     */
     private static final String LONG_BINPUT =
             "gAN9cQAoWAgAAABjYWxsYmFja3EBfXECKFhiAAAAUHJvY2Vzc0NhbGxiYWNr"
             + "LzQzOWNhMTBhLTcyY2ItNDFlZS05YjkwLTk3NjQwNGUwM2U0NyAtdCAtZSAx"
