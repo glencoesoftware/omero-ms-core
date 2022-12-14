@@ -131,6 +131,9 @@ public class PickledSessionConnector implements IConnector {
                     throw e;
                 }
             }
+            if (op.code() == PythonPickle.Opcode.SETITEMS) {
+                break;
+            }
         }
     }
 
