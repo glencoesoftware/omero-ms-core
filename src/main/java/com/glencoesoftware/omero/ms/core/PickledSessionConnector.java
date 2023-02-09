@@ -131,6 +131,9 @@ public class PickledSessionConnector implements IConnector {
                     throw e;
                 }
             }
+            if (op.code() == PythonPickle.Opcode.SETITEMS) {
+                break;
+            }
         }
     }
 
@@ -152,6 +155,7 @@ public class PickledSessionConnector implements IConnector {
     private static void assertStoreOpCode(Iterator<Op> opIterator) {
         Op store = opIterator.next();
         if (store.code() != PythonPickle.Opcode.BINPUT
+                && store.code() != PythonPickle.Opcode.LONG_BINPUT
                 && store.code() != PythonPickle.Opcode.MEMOIZE
                 && store.code() != PythonPickle.Opcode.PUT) {
             throw new IllegalArgumentException(
