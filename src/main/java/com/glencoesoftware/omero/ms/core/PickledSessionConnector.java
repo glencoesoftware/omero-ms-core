@@ -69,7 +69,6 @@ public class PickledSessionConnector implements IConnector {
 
     private Long userId;
 
-
     protected PickledSessionConnector() {
     }
 
