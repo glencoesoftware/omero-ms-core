@@ -19,8 +19,10 @@
 package com.glencoesoftware.omero.ms.core;
 
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -337,6 +339,61 @@ public class PickledSessionConnectorTest {
             + "X3NjcmlwdHMvUG9wdWxhdGVfUk9JLnB5cqIBAABYBQAAAGVtYWlscqMBAACJ"
             + "dVgHAAAAdXNlcl9pZHKkAQAASv////91Lgo=";
 
+    /**
+     * Full user session which uses a BINGET opcode to refer to a previously
+     * encountered instance of the string "1" for "server_id".
+     */
+    private static String BINGET = "gASVcQgAAAAAAAB9lCiMCGNhbGxiYWNrlH2UKI"
+            + "xhUHJvY2Vzc0NhbGxiYWNrL2RhMzljNzE5LTExMGItNDc3Ny1iZjQ4LWExO"
+            + "WU4MWY1NmQ1MCAtdCAtZSAxLjE6dGNwIC1oIDEwLjAuMTMuNSAtcCA0MzY0"
+            + "OSAtdCA2MDAwMJR9lCiMCGpvYl90eXBllIwGc2NyaXB0lIwIam9iX25hbWW"
+            + "UjBNFeHBvcnQgQ2FwYWJpbGl0aWVzlIwKc3RhcnRfdGltZZSMCGRhdGV0aW"
+            + "1llIwIZGF0ZXRpbWWUk5RDCgfnBhMUIRICKeKUhZRSlIwGc3RhdHVzlIwIZ"
+            + "mluaXNoZWSUjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WM"
+            + "fTViYWI2Y2RhLTJkNzgtNDE1ZS1hMDgwLTk1ODU4NjgwMTY5Ni9JSGFuZGx"
+            + "lMjI1YzBhZWYtOWM0NS00NDdhLWE2NjEtM2YzY2RiNWRhNjkzIC10IC1lID"
+            + "EuMTp0Y3AgLWggMTAuMC4xMy41IC1wIDQzNjQ5IC10IDYwMDAwlH2UKIwIa"
+            + "m9iX3R5cGWUjAZkZWxldGWUjApzdGFydF90aW1llGgMQwoH5wYTFQQEC1Fz"
+            + "lIWUUpSMBnN0YXR1c5SMCGZpbmlzaGVklIwFZXJyb3KUSwCMB2RyZXBvcnS"
+            + "UTowFZHR5cGWUjAdEYXRhc2V0lIwHZGVsbWFueZSJjANkaWSUjAExlHWMfT"
+            + "ViYWI2Y2RhLTJkNzgtNDE1ZS1hMDgwLTk1ODU4NjgwMTY5Ni9JSGFuZGxlM"
+            + "TRlZTRiYzYtYjAwMy00NjY5LTgwY2EtZDIxMDJmZDU1MTVmIC10IC1lIDEu"
+            + "MTp0Y3AgLWggMTAuMC4xMy41IC1wIDQzNjQ5IC10IDYwMDAwlH2UKIwIam9"
+            + "iX3R5cGWUjAZkZWxldGWUjApzdGFydF90aW1llGgMQwoH5wYTFQQJB5w4lI"
+            + "WUUpSMBnN0YXR1c5SMCGZpbmlzaGVklIwFZXJyb3KUSwCMB2RyZXBvcnSUT"
+            + "owFZHR5cGWUjAdEYXRhc2V0lIwHZGVsbWFueZSJjANkaWSUjAEylHWMfTVi"
+            + "YWI2Y2RhLTJkNzgtNDE1ZS1hMDgwLTk1ODU4NjgwMTY5Ni9JSGFuZGxlODc"
+            + "zYTU5NjUtMTU3Ni00MjVjLTg4NTQtYjA2ZGQ0OTkxZDA0IC10IC1lIDEuMT"
+            + "p0Y3AgLWggMTAuMC4xMy41IC1wIDQzNjQ5IC10IDYwMDAwlH2UKIwIam9iX"
+            + "3R5cGWUjAZkZWxldGWUjApzdGFydF90aW1llGgMQwoH5wYTFQQPA8z8lIWU"
+            + "UpSMBnN0YXR1c5SMCGZpbmlzaGVklIwFZXJyb3KUSwCMB2RyZXBvcnSUTow"
+            + "FZHR5cGWUjAdEYXRhc2V0lIwHZGVsbWFueZSJjANkaWSUjAEzlHV1jAZzaG"
+            + "FyZXOUfZSMCmNhbl9jcmVhdGWUiIwMYWN0aXZlX2dyb3VwlEsDjAljb25uZ"
+            + "WN0b3KUfZQojAlzZXJ2ZXJfaWSUaCaMCWlzX3NlY3VyZZSJjAlpc19wdWJs"
+            + "aWOUiYwRb21lcm9fc2Vzc2lvbl9rZXmUjCQyOTA3MTAxMy1hOGM0LTQ2NWE"
+            + "tOWJkZi0yNjc0MjIyY2E4OWKUjAd1c2VyX2lklEsCdYwPc2VydmVyX3NldH"
+            + "RpbmdzlH2UKIwCdWmUfZQojAR0cmVllH2UKIwHb3JwaGFuc5R9lCiMBG5hb"
+            + "WWUjA9PcnBoYW5lZCBJbWFnZXOUjAdlbmFibGVklIiMC2Rlc2NyaXB0aW9u"
+            + "lIyBVGhpcyBpcyBhIHZpcnR1YWwgY29udGFpbmVyIHdpdGggb3JwaGFuZWQ"
+            + "gaW1hZ2VzLiBUaGVzZSBpbWFnZXMgYXJlIG5vdCBsaW5rZWQgYW55d2hlcm"
+            + "UuIEp1c3QgZHJhZyB0aGVtIHRvIHRoZSBzZWxlY3RlZCBjb250YWluZXIul"
+            + "HWMCnR5cGVfb3JkZXKUjDl0YWdzZXQsdGFnLHByb2plY3QsZGF0YXNldCxz"
+            + "Y3JlZW4scGxhdGUsYWNxdWlzaXRpb24saW1hZ2WUdYwEbWVudZR9lIwIZHJ"
+            + "vcGRvd26UfZQojApjb2xsZWFndWVzlH2UKIwFbGFiZWyUjAdNZW1iZXJzlI"
+            + "wHZW5hYmxlZJSIdYwHbGVhZGVyc5R9lCiMB2VuYWJsZWSUiIwFbGFiZWyUj"
+            + "AZPd25lcnOUdYwIZXZlcnlvbmWUfZQojAVsYWJlbJSMC0FsbCBNZW1iZXJz"
+            + "lIwHZW5hYmxlZJSIdXVzdYwHYnJvd3NlcpR9lIwSdGh1bWJfZGVmYXVsdF9"
+            + "zaXpllEtgc4wGdmlld2VylH2UKIwSaW5pdGlhbF96b29tX2xldmVslEsAjA"
+            + "lyb2lfbGltaXSUTdAHjBJpbnRlcnBvbGF0ZV9waXhlbHOUiHWMC2Rvd25sb"
+            + "2FkX2FzlH2UjAhtYXhfc2l6ZZRKAESVCHOMA3dlYpR9lIwEaG9zdJSMAJRz"
+            + "jBFzY3JpcHRzX3RvX2lnbm9yZZSM7i9vbWVyby9maWd1cmVfc2NyaXB0cy9"
+            + "Nb3ZpZV9GaWd1cmUucHksL29tZXJvL2ZpZ3VyZV9zY3JpcHRzL1NwbGl0X1"
+            + "ZpZXdfRmlndXJlLnB5LC9vbWVyby9maWd1cmVfc2NyaXB0cy9UaHVtYm5ha"
+            + "WxfRmlndXJlLnB5LC9vbWVyby9maWd1cmVfc2NyaXB0cy9ST0lfU3BsaXRf"
+            + "RmlndXJlLnB5LC9vbWVyby9leHBvcnRfc2NyaXB0cy9NYWtlX01vdmllLnB"
+            + "5LC9vbWVyby9pbXBvcnRfc2NyaXB0cy9Qb3B1bGF0ZV9ST0kucHmUjAVlbW"
+            + "FpbJSJdYwHdXNlcl9pZJRLAnUu";
+
     private static String LONG_NONZERO = "gAJ9cQCKAtIESwFzLg==";
     //python2.7>>> base64.b64encode(pickle.dumps({1234L:1},2))
 
@@ -434,6 +491,18 @@ public class PickledSessionConnectorTest {
     }
 
     @Test
+    public void testUnpicklingRedisWithBinget() {
+        IConnector v = new PickledSessionConnector(
+                Base64.getDecoder().decode(BINGET));
+        Assert.assertEquals(v.getIsSecure(), Boolean.FALSE);
+        Assert.assertEquals(v.getServerId(), Long.valueOf(1L));
+        Assert.assertEquals(v.getIsPublic(), Boolean.FALSE);
+        Assert.assertEquals(
+            v.getOmeroSessionKey(), "29071013-a8c4-465a-9bdf-2674222ca89b");
+        Assert.assertEquals(v.getUserId(), Long.valueOf(2L));
+    }
+
+    @Test
     public void nonzeroLongTest() {
         byte[] data = Base64.getDecoder().decode(LONG_NONZERO);
         ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
@@ -441,7 +510,9 @@ public class PickledSessionConnectorTest {
         List<Op> ops = pickleData.ops();
         Iterator<Op> opIterator = ops.iterator();
         while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
-        Assert.assertEquals(Long.valueOf(1234L), PickledSessionConnector.deserializeNumberField(opIterator));
+        Assert.assertEquals(
+                Long.valueOf(1234L),
+                PickledSessionConnector.deserializeNumberField(opIterator));
     }
 
     @Test
@@ -452,7 +523,9 @@ public class PickledSessionConnectorTest {
         List<Op> ops = pickleData.ops();
         Iterator<Op> opIterator = ops.iterator();
         while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
-        Assert.assertEquals(Long.valueOf(0L), PickledSessionConnector.deserializeNumberField(opIterator));
+        Assert.assertEquals(
+                Long.valueOf(0L),
+                PickledSessionConnector.deserializeNumberField(opIterator));
     }
 
     @Test
@@ -463,7 +536,9 @@ public class PickledSessionConnectorTest {
         List<Op> ops = pickleData.ops();
         Iterator<Op> opIterator = ops.iterator();
         while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
-        Assert.assertEquals(Long.valueOf(255L), PickledSessionConnector.deserializeNumberField(opIterator));
+        Assert.assertEquals(
+                Long.valueOf(255L),
+                PickledSessionConnector.deserializeNumberField(opIterator));
     }
 
     @Test
@@ -474,7 +549,9 @@ public class PickledSessionConnectorTest {
         List<Op> ops = pickleData.ops();
         Iterator<Op> opIterator = ops.iterator();
         while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
-        Assert.assertEquals(Long.valueOf(65535L), PickledSessionConnector.deserializeNumberField(opIterator));
+        Assert.assertEquals(
+                Long.valueOf(65535L),
+                PickledSessionConnector.deserializeNumberField(opIterator));
     }
 
     @Test
@@ -485,7 +562,9 @@ public class PickledSessionConnectorTest {
         List<Op> ops = pickleData.ops();
         Iterator<Op> opIterator = ops.iterator();
         while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
-        Assert.assertEquals(Long.valueOf(65536L), PickledSessionConnector.deserializeNumberField(opIterator));
+        Assert.assertEquals(
+                Long.valueOf(65536L),
+                PickledSessionConnector.deserializeNumberField(opIterator));
     }
 
     @Test
@@ -496,7 +575,10 @@ public class PickledSessionConnectorTest {
         List<Op> ops = pickleData.ops();
         Iterator<Op> opIterator = ops.iterator();
         while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
-        Assert.assertEquals("test", PickledSessionConnector.deserializeStringField((opIterator)));
+        Map<Integer, String> memo = new HashMap<Integer, String>();
+        Assert.assertEquals(
+                "test", PickledSessionConnector.deserializeStringField(
+                        opIterator, memo));
     }
 
     @Test
@@ -507,7 +589,10 @@ public class PickledSessionConnectorTest {
         List<Op> ops = pickleData.ops();
         Iterator<Op> opIterator = ops.iterator();
         while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
-        Assert.assertEquals("test", PickledSessionConnector.deserializeStringField((opIterator)));
+        Map<Integer, String> memo = new HashMap<Integer, String>();
+        Assert.assertEquals(
+                "test", PickledSessionConnector.deserializeStringField(
+                        opIterator, memo));
     }
 
     @Test
@@ -518,7 +603,10 @@ public class PickledSessionConnectorTest {
         List<Op> ops = pickleData.ops();
         Iterator<Op> opIterator = ops.iterator();
         while(opIterator.next().code() != PythonPickle.Opcode.DICT) {}
-        Assert.assertEquals("test", PickledSessionConnector.deserializeStringField((opIterator)));
+        Map<Integer, String> memo = new HashMap<Integer, String>();
+        Assert.assertEquals(
+                "test", PickledSessionConnector.deserializeStringField(
+                        opIterator, memo));
     }
 
     @Test
@@ -529,7 +617,10 @@ public class PickledSessionConnectorTest {
         List<Op> ops = pickleData.ops();
         Iterator<Op> opIterator = ops.iterator();
         while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
-        Assert.assertEquals("test", PickledSessionConnector.deserializeStringField((opIterator)));
+        Map<Integer, String> memo = new HashMap<Integer, String>();
+        Assert.assertEquals(
+                "test", PickledSessionConnector.deserializeStringField(
+                        opIterator, memo));
     }
 
     @Test(expectedExceptions={IllegalArgumentException.class})
@@ -562,6 +653,7 @@ public class PickledSessionConnectorTest {
         List<Op> ops = pickleData.ops();
         Iterator<Op> opIterator = ops.iterator();
         while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
-        PickledSessionConnector.deserializeStringField((opIterator));
+        Map<Integer, String> memo = new HashMap<Integer, String>();
+        PickledSessionConnector.deserializeStringField(opIterator, memo);
     }
 }
