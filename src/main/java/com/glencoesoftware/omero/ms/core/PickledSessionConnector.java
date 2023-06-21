@@ -233,7 +233,7 @@ public class PickledSessionConnector implements IConnector {
             case BININT:
             case BININT1:
             case BININT2:
-                return new Long((Integer) value.arg());
+                return Long.valueOf((Integer) value.arg());
             case LONG1:
                 return longFromBytes(((PythonPickle.Long1) value.arg()).val());
             default:
