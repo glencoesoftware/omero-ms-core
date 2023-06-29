@@ -21,8 +21,10 @@ package com.glencoesoftware.omero.ms.core;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.LoggerFactory;
@@ -44,6 +46,18 @@ public class PickledSessionConnector implements IConnector {
                 PythonPickle.Opcode.BINUNICODE8,
                 PythonPickle.Opcode.UNICODE
         });
+
+    /**
+     * All the memoized strings we have encountered before we hit the
+     * connector
+     */
+    private Map<Integer, String> memo = new HashMap<Integer, String>();
+
+    /**
+     * Current memo offset, incremented each time a memo Opcode is encountered
+     * before we hit the connector
+     */
+    private int memoOffset = 0;
 
     private Long serverId;
 
@@ -67,15 +81,30 @@ public class PickledSessionConnector implements IConnector {
         PythonPickle pickleData = new PythonPickle(bbks);
         List<Op> ops = pickleData.ops();
         Iterator<Op> opIterator = ops.iterator();
+        String arg = null;
         while (opIterator.hasNext()) {
             Op op = opIterator.next();
-            // Loop through until we find the dictionary key "connector" being
-            // set
+
             if (STRING_TYPE_OPCODES.contains(op.code())) {
-                String key = toString(op.arg());
-                if ("connector".equals(key)) {
+                arg = toString(op.arg());
+                if ("connector".equals(arg)) {
+                    // When we find the string "connector" being memoized
+                    // deserialize the dictionary we know is going to be
+                    // present under that key and exit.
                     deserializeConnector(opIterator);
+                    return;
                 }
+            } else if (PythonPickle.Opcode.MEMOIZE == op.code()) {
+                // If we've been asked to memoize a string, remember it,
+                // otherwise just increment the offset of values we've been
+                // asked to memoize.  We may need one or more of these memoized
+                // strings once we hit the connector.
+                if (arg != null) {
+                    memo.put(memoOffset, arg);
+                }
+                memoOffset++;
+            } else {
+                arg = null;
             }
         }
     }
@@ -120,7 +149,7 @@ public class PickledSessionConnector implements IConnector {
                             break;
                         case "omero_session_key":
                             omeroSessionKey =
-                                deserializeStringField(opIterator);
+                                deserializeStringField(opIterator, memo);
                             break;
                         case "is_public":
                             isPublic = deserializeBooleanField(opIterator);
@@ -140,7 +169,7 @@ public class PickledSessionConnector implements IConnector {
     private Long deserializeServerId(Iterator<Op> opIterator) {
         assertStoreOpCode(opIterator);
         Op value = opIterator.next();
-        String asString = handleStringValue(value, false);
+        String asString = handleStringValue(value, memo, false);
         if (asString != null) {
             return Long.valueOf(asString);
         }
@@ -204,7 +233,7 @@ public class PickledSessionConnector implements IConnector {
             case BININT:
             case BININT1:
             case BININT2:
-                return new Long((Integer) value.arg());
+                return Long.valueOf((Integer) value.arg());
             case LONG1:
                 return longFromBytes(((PythonPickle.Long1) value.arg()).val());
             default:
@@ -216,17 +245,21 @@ public class PickledSessionConnector implements IConnector {
         }
     }
 
-    public static String deserializeStringField(Iterator<Op> opIterator) {
+    public static String deserializeStringField(
+            Iterator<Op> opIterator, Map<Integer, String> memo) {
         assertStoreOpCode(opIterator);
-        return handleStringValue(opIterator.next(), true);
+        return handleStringValue(opIterator.next(), memo, true);
     }
 
     public static String handleStringValue(
-            Op value, boolean throwOnUnexpected) {
+            Op value, Map<Integer, String> memo, boolean throwOnUnexpected) {
         String v = null;
         if (STRING_TYPE_OPCODES.contains(value.code())) {
             v = toString(value.arg());
-        } else if (throwOnUnexpected) {
+        } else if (value.code() == PythonPickle.Opcode.BINGET
+                || value.code() == PythonPickle.Opcode.LONG_BINGET) {
+            v = memo.get(value.arg());
+        } else if (throwOnUnexpected){
             throw new IllegalArgumentException(
                     "Unexpected opcode for string field: " + value.code());
         }
