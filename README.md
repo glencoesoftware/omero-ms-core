@@ -1,5 +1,3 @@
-[![AppVeyor status](https://ci.appveyor.com/api/projects/status/github/omero-ms-core)](https://ci.appveyor.com/project/gs-jenkins/omero-ms-core)
-
 OMERO Microservice Core
 =======================
 
