@@ -21,6 +21,7 @@ package com.glencoesoftware.omero.ms.core;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -69,6 +70,8 @@ public class PickledSessionConnector implements IConnector {
 
     private Long userId;
 
+    private String b64Session;
+
     protected PickledSessionConnector() {
     }
 
@@ -77,6 +80,7 @@ public class PickledSessionConnector implements IConnector {
     }
 
     protected void init(byte[] sessionData) {
+        b64Session = Base64.getEncoder().encodeToString(sessionData);
         ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(sessionData);
         PythonPickle pickleData = new PythonPickle(bbks);
         List<Op> ops = pickleData.ops();
@@ -132,10 +136,12 @@ public class PickledSessionConnector implements IConnector {
     }
 
     private void deserializeConnector(Iterator<Op> opIterator) {
+        String arg = null;
         while (opIterator.hasNext()) {
             Op op = opIterator.next();
             if (STRING_TYPE_OPCODES.contains(op.code())) {
                 String fieldName = toString(op.arg());
+                arg = fieldName;
                 try {
                     switch (fieldName) {
                         case "is_secure":
@@ -143,6 +149,10 @@ public class PickledSessionConnector implements IConnector {
                             break;
                         case "server_id":
                             serverId = deserializeServerId(opIterator);
+                            // If the server_id was a string, we need to
+                            // Be prepared to MEMOIZE it if that's what the
+                            // Next opcode is
+                            arg = Long.toString(serverId);
                             break;
                         case "user_id":
                             userId = deserializeNumberField(opIterator);
@@ -150,15 +160,32 @@ public class PickledSessionConnector implements IConnector {
                         case "omero_session_key":
                             omeroSessionKey =
                                 deserializeStringField(opIterator, memo);
+                            // If the omero_session_key was a string, we need
+                            // to be prepared to MEMOIZE it if that's what the
+                            // Next opcode is
+                            arg = omeroSessionKey;
                             break;
                         case "is_public":
                             isPublic = deserializeBooleanField(opIterator);
                             break;
+                        default:
+                            log.warn("Unexpected field name in connector: " + fieldName);
                     }
                 } catch (Exception e) {
                     log.error("Exception while deserializing: {}", fieldName);
+                    log.error("Pickled Session: " + b64Session);
                     throw e;
                 }
+            }
+            else if (PythonPickle.Opcode.MEMOIZE == op.code()) {
+                // If we've been asked to memoize a string, remember it,
+                // otherwise just increment the offset of values we've been
+                // asked to memoize.  We may need one or more of these memoized
+                // strings once we hit the connector.
+                if (arg != null) {
+                    memo.put(memoOffset, arg);
+                }
+                memoOffset++;
             }
             if (op.code() == PythonPickle.Opcode.SETITEMS) {
                 break;
@@ -181,7 +208,7 @@ public class PickledSessionConnector implements IConnector {
         return asLong;
     }
 
-    private static void assertStoreOpCode(Iterator<Op> opIterator) {
+    private void assertStoreOpCode(Iterator<Op> opIterator) {
         Op store = opIterator.next();
         if (store.code() != PythonPickle.Opcode.BINPUT
                 && store.code() != PythonPickle.Opcode.LONG_BINPUT
@@ -189,10 +216,12 @@ public class PickledSessionConnector implements IConnector {
                 && store.code() != PythonPickle.Opcode.PUT) {
             throw new IllegalArgumentException(
                     "Unexpected opcode: " + store.code());
+        } else {
+            memoOffset++;
         }
     }
 
-    public static Boolean deserializeBooleanField(Iterator<Op> opIterator) {
+    public Boolean deserializeBooleanField(Iterator<Op> opIterator) {
         assertStoreOpCode(opIterator);
         return handleBooleanValue(opIterator.next(), true);
     }
@@ -223,7 +252,7 @@ public class PickledSessionConnector implements IConnector {
         return Long.valueOf(bigInt.longValue());
     }
 
-    public static Long deserializeNumberField(Iterator<Op> opIterator) {
+    public Long deserializeNumberField(Iterator<Op> opIterator) {
         assertStoreOpCode(opIterator);
         return handleNumberValue(opIterator.next(), true);
     }
@@ -245,7 +274,7 @@ public class PickledSessionConnector implements IConnector {
         }
     }
 
-    public static String deserializeStringField(
+    public String deserializeStringField(
             Iterator<Op> opIterator, Map<Integer, String> memo) {
         assertStoreOpCode(opIterator);
         return handleStringValue(opIterator.next(), memo, true);
