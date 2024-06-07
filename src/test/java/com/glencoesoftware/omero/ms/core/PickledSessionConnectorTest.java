@@ -34,6 +34,8 @@ import io.kaitai.struct.ByteBufferKaitaiStream;
 
 public class PickledSessionConnectorTest {
 
+    private static final String NEW_DATA = "gAWVHDoAAAAAAAB9lCiMCGNhbGxiYWNrlH2UKIxkUHJvY2Vzc0NhbGxiYWNrLzMyOGY3ZDg4LTFlMzktNGM5MC05YzJlLWU2NmJkNjgyMjU5NyAtdCAtZSAxLjE6dGNwIC1oIDEwLjEwMC4yMC43MyAtcCAzNTU0MSAtdCA2MDAwMJR9lCiMCGpvYl90eXBllIwGc2NyaXB0lIwIam9iX25hbWWUjBNFeHBvcnQgQ2FwYWJpbGl0aWVzlIwKc3RhcnRfdGltZZSMCGRhdGV0aW1llIwIZGF0ZXRpbWWUk5RDCgfoBR8IDi8OU0GUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay9lYzBkNmZjMC00YTM2LTQ5MjYtODE1OS1iNThkMDAyZWY0MWYgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8IEBsNSGGUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay9lNDE4MzU3NS1iZjk4LTQwNmUtOWUyYi02NDZiODk3N2Q4Y2EgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8IJR0OTFGUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay82MmE5MDMxNC04OTE2LTRkMDAtYjYxNi00ZDRjZDVkZjc0NGIgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8IJxALvN6UhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay8yNTk5YTBmMy1hMWE2LTQ2YWYtYjM0Zi1lYzdjOGM1YTMzNWEgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8IKjYOKCuUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay9hZDQ4ZmRjYi0zN2Y2LTRmNWEtYmQ5Yy1iYThkMTM3NjgyYzMgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8IMyIMTUaUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay9hMjQ2MDIwMC0zZDIwLTRlNjctYTc2Yy0wMWZlODMzMmM4MDUgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8IMy8NYRKUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay9mNzQxY2RiYi1lY2U1LTQ5NWEtYjg4ZC04MWY5MzcyYzc5MDYgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8INCAJm4qUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay9mNmE4NTgwMi00ZDE2LTQ5NGMtYjdkNy04ZTc4NzAwNTU5OGIgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8INSEOjEeUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay9lODk2NDhjMC1hNjU1LTRhZDgtOTJjMy04ZWFiYjU2Y2RiNjkgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8JDhoH5hOUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay83NGRlNDY2Yi1lMzAwLTRjM2QtOTA0Mi0wZjg5N2VmZGYwNDQgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8JJjUNbOKUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay85ZWFiY2JiYi0zMGRkLTQzM2EtOWI2My1hYTBmNjBmOGU3YjAgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8JJxgPNf2UhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay83MWRiODcyMC05ZDcyLTRjYWMtOWY1Ny0xMGU0ZWY0ZDQwNTEgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8JKAsKlxCUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay84Y2U5MTk0My1jZTNkLTQ4ZDEtODc5MC0zNTFhYmEwZWM1N2QgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8JKBwK1n2UhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay82YmZiYmUzOS0zODZkLTQ5M2ItYTI5NC0zYTMzM2JkMzM3NWEgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8JKCcJ9j+UhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay8zMTg5MzQ3YS01NzQ2LTQwYTEtOTZkOS02NmIyY2UwNjI1N2UgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KDxEK8IOUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay8yNzg0NDkxZi0yMGU2LTQzODMtODJmMi1hMmQ5OTQ1MGE2MGYgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KDx0IjhGUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay9lZjY0YmE0OC02M2YwLTRkZDktYjA4NC05ZjFiYjJiMzYzODQgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KEAsJpJaUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay81OTYxNmQxNS01Njk2LTQ2ZjctOGZmZi1hMjFjZGZiNWQ4NGMgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KECMGwFuUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay82ODgzMjJmMC01ZjdlLTRjMDItYjc5Mi0xODhkZjlhM2ZlZjAgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KEDUOHeOUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay8yZTVmNmQ2MS1iNWRjLTQ0MWMtODliMy0xNWU2MTgxZjNiYWYgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KEQ4OmeSUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay84NTQ1NzViMy0yYjIyLTQ3MWQtOTg4Zi0xMWExNTAyMzdmYTQgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KERwFxh2UhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay83MGQ2YzQ1Yi1iYWJkLTQwYWMtOTdjMC0yNzkwMWE0ZmMyNmEgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KESYO3cOUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay9iN2UzOWRmNS0wMzNhLTQ1NWYtOTAzMS0zZGI2YWI2MTExYzYgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KETIKIj6UhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay84YmUwNmMwNy1kOTYzLTRkZGEtYmI1NS02OWMwZTlkNWZmMmEgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KEgcKdMyUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay85MTU5Y2UwZC1jM2FhLTRmMDctODZmOC0wNzdmMWIyY2RjNDMgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KEjAFMmqUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay84ZmM1ZjVjYS01Zjc4LTQxODUtOWYzNS1kYzRhYzNkMTM4NGYgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KEwgIDjyUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay83MjUzODA0Yy02NWM5LTQ5MWUtYTU1Yi1kYjkxZWZiNmQ2MTUgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KExwA3NWUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay9lYTU1ZDdjZi0xNjE3LTRkNjgtODZmMi00MWFiMjgzN2M3MWEgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KEysO+7KUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay8xOGRiZDU5ZS0wY2FlLTQ0YjktOWU3NS03MmQ3ODI5YmQwYWUgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KFAII1f2UhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay9jODllNDU2NS03NmU4LTRhYWYtYmRhMi1hOTFjZGNmYjYwZDEgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KFA4KPLeUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay8yMTMwZDQ4OS04NWQzLTQwNmYtYmQzNy1jZTI1OWYzNDQ2MTUgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KFBoKxGyUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay9kNGEzMGNlNi1iY2YzLTRmNTktYWY4My04MzMzYWRlMWM4Y2IgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KFCUKPW+UhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay8xNmU1Nzc0OC1mODk3LTQzODYtODAyYS0xYzJhOGRmMTIwYmQgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KFC8PFUGUhZRSlIwGc3RhdHVzlGoxAgAAajICAABLAGozAgAAfZSMB09wdGlvbnOUjAhUSUZGIFBOR5RzdYxkUHJvY2Vzc0NhbGxiYWNrL2JhMzI1NDMwLWI4ZWYtNDhjMC04ODNhLWJhNjNlODI3MmIxZCAtdCAtZSAxLjE6dGNwIC1oIDEwLjEwMC4yMC43MyAtcCAzNTU0MSAtdCA2MDAwMJR9lCiMCGpvYl90eXBllIwGc2NyaXB0lIwIam9iX25hbWWUjBNFeHBvcnQgQ2FwYWJpbGl0aWVzlIwKc3RhcnRfdGltZZRoDEMKB+gFHwoUOgMGJpSFlFKUjAZzdGF0dXOUajECAABqMgIAAEsAajMCAAB9lIwHT3B0aW9uc5SMCFRJRkYgUE5HlHN1jGRQcm9jZXNzQ2FsbGJhY2svY2NhN2M5MmYtNTQzMS00Mzg4LWExYjItYThkOTM4OWRkNDZkIC10IC1lIDEuMTp0Y3AgLWggMTAuMTAwLjIwLjczIC1wIDM1NTQxIC10IDYwMDAwlH2UKIwIam9iX3R5cGWUjAZzY3JpcHSUjAhqb2JfbmFtZZSME0V4cG9ydCBDYXBhYmlsaXRpZXOUjApzdGFydF90aW1llGgMQwoH6AUfChUODG4IlIWUUpSMBnN0YXR1c5SMCGZpbmlzaGVklIwKcmV0dXJuY29kZZRLAIwHcmVzdWx0c5R9lIwHT3B0aW9uc5SMCFRJRkYgUE5HlHN1jGRQcm9jZXNzQ2FsbGJhY2svODFmNjRlY2QtMWNhYy00OGIyLWI5MWYtYzdjZTMxZjA4MWM3IC10IC1lIDEuMTp0Y3AgLWggMTAuMTAwLjIwLjczIC1wIDM1NTQxIC10IDYwMDAwlH2UKIwIam9iX3R5cGWUjAZzY3JpcHSUjAhqb2JfbmFtZZSME0V4cG9ydCBDYXBhYmlsaXRpZXOUjApzdGFydF90aW1llGgMQwoH6AUfChUbBSsqlIWUUpSMBnN0YXR1c5SMCGZpbmlzaGVklIwKcmV0dXJuY29kZZRLAIwHcmVzdWx0c5R9lIwHT3B0aW9uc5SMCFRJRkYgUE5HlHN1jGRQcm9jZXNzQ2FsbGJhY2svMGUwNTJjZjQtYmEzZC00OGRiLWE0ZWItOThjOTUzMGY3Yzk4IC10IC1lIDEuMTp0Y3AgLWggMTAuMTAwLjIwLjczIC1wIDM1NTQxIC10IDYwMDAwlH2UKIwIam9iX3R5cGWUjAZzY3JpcHSUjAhqb2JfbmFtZZSME0V4cG9ydCBDYXBhYmlsaXRpZXOUjApzdGFydF90aW1llGgMQwoH6AUfChUnDJ7AlIWUUpSMBnN0YXR1c5SMCGZpbmlzaGVklIwKcmV0dXJuY29kZZRLAIwHcmVzdWx0c5R9lIwHT3B0aW9uc5SMCFRJRkYgUE5HlHN1jGRQcm9jZXNzQ2FsbGJhY2svMjRhZTE2M2MtYjg1My00MzFkLTk3MjItZjJmZDFjYzA4ZDllIC10IC1lIDEuMTp0Y3AgLWggMTAuMTAwLjIwLjczIC1wIDM1NTQxIC10IDYwMDAwlH2UKIwIam9iX3R5cGWUjAZzY3JpcHSUjAhqb2JfbmFtZZSME0V4cG9ydCBDYXBhYmlsaXRpZXOUjApzdGFydF90aW1llGgMQwoH6AUfChU2A+8QlIWUUpSMBnN0YXR1c5SMCGZpbmlzaGVklIwKcmV0dXJuY29kZZRLAIwHcmVzdWx0c5R9lIwHT3B0aW9uc5SMCFRJRkYgUE5HlHN1jGRQcm9jZXNzQ2FsbGJhY2svYzdiOWJjYjktZmUwNi00OTg4LTk3YTYtMmY2YmE2YzJlNDgyIC10IC1lIDEuMTp0Y3AgLWggMTAuMTAwLjIwLjczIC1wIDM1NTQxIC10IDYwMDAwlH2UKIwIam9iX3R5cGWUjAZzY3JpcHSUjAhqb2JfbmFtZZSME0V4cG9ydCBDYXBhYmlsaXRpZXOUjApzdGFydF90aW1llGgMQwoH6AUfChYIAV1ZlIWUUpSMBnN0YXR1c5SMCGZpbmlzaGVklIwKcmV0dXJuY29kZZRLAIwHcmVzdWx0c5R9lIwHT3B0aW9uc5SMCFRJRkYgUE5HlHN1jGRQcm9jZXNzQ2FsbGJhY2svOTczZjBhZGUtNzE0NC00YmJlLTg1NmEtNWNmNTIwZmQwOGFmIC10IC1lIDEuMTp0Y3AgLWggMTAuMTAwLjIwLjczIC1wIDM1NTQxIC10IDYwMDAwlH2UKIwIam9iX3R5cGWUjAZzY3JpcHSUjAhqb2JfbmFtZZSME0V4cG9ydCBDYXBhYmlsaXRpZXOUjApzdGFydF90aW1llGgMQwoH6AUfChYQDd3ilIWUUpSMBnN0YXR1c5RqogIAAGqjAgAASwBqpAIAAH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay82ZWZkMjdlYi0zNDVlLTQ4ZDktYjdmOS05YWEyNjYwMGU4ZjAgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KFhwHi9OUhZRSlIwGc3RhdHVzlGqiAgAAaqMCAABLAGqkAgAAfZSMB09wdGlvbnOUjAhUSUZGIFBOR5RzdYxkUHJvY2Vzc0NhbGxiYWNrL2I5M2IxNmMzLTQ4OWUtNDU2Mi04M2IwLWMzY2MyMmY4MTJhYyAtdCAtZSAxLjE6dGNwIC1oIDEwLjEwMC4yMC43MyAtcCAzNTU0MSAtdCA2MDAwMJR9lCiMCGpvYl90eXBllIwGc2NyaXB0lIwIam9iX25hbWWUjBNFeHBvcnQgQ2FwYWJpbGl0aWVzlIwKc3RhcnRfdGltZZRoDEMKB+gFHwoWJwcuGpSFlFKUjAZzdGF0dXOUaqICAABqowIAAEsAaqQCAAB9lIwHT3B0aW9uc5SMCFRJRkYgUE5HlHN1jGRQcm9jZXNzQ2FsbGJhY2svMWFkZmI1ZDItMzIwNC00NmIwLTljZTEtMTMyMWUzM2Y1N2UyIC10IC1lIDEuMTp0Y3AgLWggMTAuMTAwLjIwLjczIC1wIDM1NTQxIC10IDYwMDAwlH2UKIwIam9iX3R5cGWUjAZzY3JpcHSUjAhqb2JfbmFtZZSME0V4cG9ydCBDYXBhYmlsaXRpZXOUjApzdGFydF90aW1llGgMQwoH6AUfChYwCu+QlIWUUpSMBnN0YXR1c5RqogIAAGqjAgAASwBqpAIAAH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay84NWY3ZDhkZC1hNTgxLTRiMDYtOWExMi0xMjYwYTVhMTA3ZDcgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8KFwQG9sqUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay85NzBmZjgyYy1kYzgzLTRjZWYtOTU1Zi00ODM0OWMyYjI5MjUgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8LAhAPCR2UhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay84ZDc1ZjRkNC05ZjM5LTQyMzktOTk0NS1hYTU2ZWQ1OGE3YzUgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8LGSAHLM6UhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay84YWNjNWU0NS1jMjQ0LTRkZGEtOTkwYy02YmQ3MDE4YTM4MjcgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8NHzoIgYiUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay9hNjBmNWQxYi03OTcxLTQyODctODFiYy0yYWVmNGExMjRmZWEgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8RADgLnQ+UhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay8zZmRmMzRiMi1kMmJiLTQyOGItYTdkMi01MTkxZGNjMzcwYTAgLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8RATAEH0WUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3WMZFByb2Nlc3NDYWxsYmFjay85NDcxZDg2MS1lZTNmLTQ2NzEtODRhMC1lMDM5MjM5Nzk5MTggLXQgLWUgMS4xOnRjcCAtaCAxMC4xMDAuMjAuNzMgLXAgMzU1NDEgLXQgNjAwMDCUfZQojAhqb2JfdHlwZZSMBnNjcmlwdJSMCGpvYl9uYW1llIwTRXhwb3J0IENhcGFiaWxpdGllc5SMCnN0YXJ0X3RpbWWUaAxDCgfoBR8RAgALmBGUhZRSlIwGc3RhdHVzlIwIZmluaXNoZWSUjApyZXR1cm5jb2RllEsAjAdyZXN1bHRzlH2UjAdPcHRpb25zlIwIVElGRiBQTkeUc3V1jAZzaGFyZXOUfZSMCmNhbl9jcmVhdGWUiIwMbGlzdF9zY3JpcHRzlF2UKIwPTW92aWVfRmlndXJlLnB5lIwTTW92aWVfUk9JX0ZpZ3VyZS5weZSMFFNwbGl0X1ZpZXdfRmlndXJlLnB5lIwTVGh1bWJuYWlsX0ZpZ3VyZS5weZSME1JPSV9TcGxpdF9GaWd1cmUucHmUjA1NYWtlX01vdmllLnB5lIwTQmF0Y2hfUk9JX0V4cG9ydC5weZSMFUJhdGNoX0ltYWdlX0V4cG9ydC5weZSMEktleVZhbF9mcm9tX2Nzdi5weZSMEFJlbW92ZV9LZXlWYWwucHmUjBBLZXlWYWxfdG9fY3N2LnB5lIwUUG9wdWxhdGVfTWV0YWRhdGEucHmUjA9Qb3B1bGF0ZV9ST0kucHmUjBVLeW1vZ3JhcGhfQW5hbHlzaXMucHmUjAxLeW1vZ3JhcGgucHmUjA50ZXN0X3NjcmlwdC5weZSMD1Bsb3RfUHJvZmlsZS5weZSME0ltYWdlc19Gcm9tX1JPSXMucHmUjBNNb3ZlX0Fubm90YXRpb25zLnB5lIwTRGF0YXNldF9Ub19QbGF0ZS5weZSMEkNoYW5uZWxfT2Zmc2V0cy5weZSMEUNvbWJpbmVfSW1hZ2VzLnB5lIwOdGVzdF9zY3JpcHQucHmUjBBnZXRfaW1hZ2VfaWRzLnB5lIwORXhwb3J0X1ZpZXcucHmUjBZFeHBvcnRfQ2FwYWJpbGl0aWVzLnB5lGWMDGFjdGl2ZV9ncm91cJRNSwGMCWNvbm5lY3RvcpR9lCiMCXNlcnZlcl9pZJSMATGUjAlpc19zZWN1cmWUiYwJaXNfcHVibGljlImMEW9tZXJvX3Nlc3Npb25fa2V5lIwkZjVjM2FkNjYtNzAyZS00ZWViLTk3NGItNzU4ZTJjMTU5OTgzlIwHdXNlcl9pZJRLx3WMD3NlcnZlcl9zZXR0aW5nc5R9lCiMAnVplH2UKIwEdHJlZZR9lCiMB29ycGhhbnOUfZQojARuYW1llIwPT3JwaGFuZWQgSW1hZ2VzlIwHZW5hYmxlZJSIjAtkZXNjcmlwdGlvbpSMgVRoaXMgaXMgYSB2aXJ0dWFsIGNvbnRhaW5lciB3aXRoIG9ycGhhbmVkIGltYWdlcy4gVGhlc2UgaW1hZ2VzIGFyZSBub3QgbGlua2VkIGFueXdoZXJlLiBKdXN0IGRyYWcgdGhlbSB0byB0aGUgc2VsZWN0ZWQgY29udGFpbmVyLpR1jAp0eXBlX29yZGVylIw5dGFnc2V0LHRhZyxwcm9qZWN0LGRhdGFzZXQsc2NyZWVuLHBsYXRlLGFjcXVpc2l0aW9uLGltYWdllHWMBG1lbnWUfZSMCGRyb3Bkb3dulH2UKIwKY29sbGVhZ3Vlc5R9lCiMBWxhYmVslIwHTWVtYmVyc5SMB2VuYWJsZWSUiHWMB2xlYWRlcnOUfZQojAdlbmFibGVklIiMBWxhYmVslIwGT3duZXJzlHWMCGV2ZXJ5b25llH2UKIwFbGFiZWyUjAtBbGwgTWVtYmVyc5SMB2VuYWJsZWSUiHV1c3WMB2Jyb3dzZXKUfZSMEnRodW1iX2RlZmF1bHRfc2l6ZZRLYHOMBnZpZXdlcpR9lCiMEmluaXRpYWxfem9vbV9sZXZlbJRLAIwJcm9pX2xpbWl0lE3QB4wSaW50ZXJwb2xhdGVfcGl4ZWxzlIh1jAtkb3dubG9hZF9hc5R9lIwIbWF4X3NpemWUSgBElQhzjAN3ZWKUfZSMBGhvc3SUjACUc4wRc2NyaXB0c190b19pZ25vcmWUjO4vb21lcm8vZmlndXJlX3NjcmlwdHMvTW92aWVfRmlndXJlLnB5LC9vbWVyby9maWd1cmVfc2NyaXB0cy9TcGxpdF9WaWV3X0ZpZ3VyZS5weSwvb21lcm8vZmlndXJlX3NjcmlwdHMvVGh1bWJuYWlsX0ZpZ3VyZS5weSwvb21lcm8vZmlndXJlX3NjcmlwdHMvUk9JX1NwbGl0X0ZpZ3VyZS5weSwvb21lcm8vZXhwb3J0X3NjcmlwdHMvTWFrZV9Nb3ZpZS5weSwvb21lcm8vaW1wb3J0X3NjcmlwdHMvUG9wdWxhdGVfUk9JLnB5lIwFZW1haWyUiHWMB3VzZXJfaWSUSv////91Lg==";
+
     private static final String FULL_LONG_DATA =
         "gAJ9cQEoVQd1c2VyX2lkigBVBnNoYXJlc31VCWNvbm5lY3RvcmNvb"
         + "WVyb3dlYi5jb25uZWN0b3IKQ29ubmVjdG9yCnECKYFxA31xBChVCWlzX3NlY3VyZX"
@@ -503,8 +505,21 @@ public class PickledSessionConnectorTest {
     }
 
     @Test
+    public void testUnpicklingRedisWithLongBinget() {
+        IConnector v = new PickledSessionConnector(
+                Base64.getDecoder().decode(NEW_DATA));
+        Assert.assertEquals(v.getIsSecure(), Boolean.FALSE);
+        Assert.assertEquals(v.getServerId(), Long.valueOf(1L));
+        Assert.assertEquals(v.getIsPublic(), Boolean.FALSE);
+        Assert.assertEquals(
+            v.getOmeroSessionKey(), "f5c3ad66-702e-4eeb-974b-758e2c159983");
+        Assert.assertEquals(v.getUserId(), Long.valueOf(199L));
+    }
+
+    @Test
     public void nonzeroLongTest() {
         byte[] data = Base64.getDecoder().decode(LONG_NONZERO);
+        PickledSessionConnector p = new PickledSessionConnector(data);
         ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
         PythonPickle pickleData = new PythonPickle(bbks);
         List<Op> ops = pickleData.ops();
@@ -512,12 +527,13 @@ public class PickledSessionConnectorTest {
         while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
         Assert.assertEquals(
                 Long.valueOf(1234L),
-                PickledSessionConnector.deserializeNumberField(opIterator));
+                p.deserializeNumberField(opIterator));
     }
 
     @Test
     public void zeroLongTest() {
         byte[] data = Base64.getDecoder().decode(LONG_ZERO);
+        PickledSessionConnector p = new PickledSessionConnector(data);
         ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
         PythonPickle pickleData = new PythonPickle(bbks);
         List<Op> ops = pickleData.ops();
@@ -525,12 +541,13 @@ public class PickledSessionConnectorTest {
         while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
         Assert.assertEquals(
                 Long.valueOf(0L),
-                PickledSessionConnector.deserializeNumberField(opIterator));
+                p.deserializeNumberField(opIterator));
     }
 
     @Test
     public void binInt1Test() {
         byte[] data = Base64.getDecoder().decode(BININT1_TEST);
+        PickledSessionConnector p = new PickledSessionConnector(data);
         ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
         PythonPickle pickleData = new PythonPickle(bbks);
         List<Op> ops = pickleData.ops();
@@ -538,12 +555,13 @@ public class PickledSessionConnectorTest {
         while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
         Assert.assertEquals(
                 Long.valueOf(255L),
-                PickledSessionConnector.deserializeNumberField(opIterator));
+                p.deserializeNumberField(opIterator));
     }
 
     @Test
     public void binInt2Test() {
         byte[] data = Base64.getDecoder().decode(BININT2_TEST);
+        PickledSessionConnector p = new PickledSessionConnector(data);
         ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
         PythonPickle pickleData = new PythonPickle(bbks);
         List<Op> ops = pickleData.ops();
@@ -551,12 +569,13 @@ public class PickledSessionConnectorTest {
         while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
         Assert.assertEquals(
                 Long.valueOf(65535L),
-                PickledSessionConnector.deserializeNumberField(opIterator));
+                p.deserializeNumberField(opIterator));
     }
 
     @Test
     public void binIntTest() {
         byte[] data = Base64.getDecoder().decode(BININT_TEST);
+        PickledSessionConnector p = new PickledSessionConnector(data);
         ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
         PythonPickle pickleData = new PythonPickle(bbks);
         List<Op> ops = pickleData.ops();
@@ -564,12 +583,13 @@ public class PickledSessionConnectorTest {
         while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
         Assert.assertEquals(
                 Long.valueOf(65536L),
-                PickledSessionConnector.deserializeNumberField(opIterator));
+                p.deserializeNumberField(opIterator));
     }
 
     @Test
     public void py3StringTest() {
         byte[] data = Base64.getDecoder().decode(PY3_STRING_TEST);
+        PickledSessionConnector p = new PickledSessionConnector(data);
         ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
         PythonPickle pickleData = new PythonPickle(bbks);
         List<Op> ops = pickleData.ops();
@@ -577,13 +597,14 @@ public class PickledSessionConnectorTest {
         while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
         Map<Integer, String> memo = new HashMap<Integer, String>();
         Assert.assertEquals(
-                "test", PickledSessionConnector.deserializeStringField(
+                "test", p.deserializeStringField(
                         opIterator, memo));
     }
 
     @Test
     public void shortBinUnicodeTest() {
         byte[] data = Base64.getDecoder().decode(SHORT_BINUNICODE_TEST);
+        PickledSessionConnector p = new PickledSessionConnector(data);
         ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
         PythonPickle pickleData = new PythonPickle(bbks);
         List<Op> ops = pickleData.ops();
@@ -591,13 +612,14 @@ public class PickledSessionConnectorTest {
         while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
         Map<Integer, String> memo = new HashMap<Integer, String>();
         Assert.assertEquals(
-                "test", PickledSessionConnector.deserializeStringField(
+                "test", p.deserializeStringField(
                         opIterator, memo));
     }
 
     @Test
     public void UnicodeStringtTest() {
         byte[] data = Base64.getDecoder().decode(UNICODE_TEST);
+        PickledSessionConnector p = new PickledSessionConnector(data);
         ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
         PythonPickle pickleData = new PythonPickle(bbks);
         List<Op> ops = pickleData.ops();
@@ -605,13 +627,14 @@ public class PickledSessionConnectorTest {
         while(opIterator.next().code() != PythonPickle.Opcode.DICT) {}
         Map<Integer, String> memo = new HashMap<Integer, String>();
         Assert.assertEquals(
-                "test", PickledSessionConnector.deserializeStringField(
+                "test", p.deserializeStringField(
                         opIterator, memo));
     }
 
     @Test
     public void Unicode8StringtTest() {
         byte[] data = Base64.getDecoder().decode(BINUNICODE8_TEST);
+        PickledSessionConnector p = new PickledSessionConnector(data);
         ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
         PythonPickle pickleData = new PythonPickle(bbks);
         List<Op> ops = pickleData.ops();
@@ -619,41 +642,44 @@ public class PickledSessionConnectorTest {
         while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
         Map<Integer, String> memo = new HashMap<Integer, String>();
         Assert.assertEquals(
-                "test", PickledSessionConnector.deserializeStringField(
+                "test", p.deserializeStringField(
                         opIterator, memo));
     }
 
     @Test(expectedExceptions={IllegalArgumentException.class})
     public void testBooleanUnexpectedOpCode() {
         byte[] data = Base64.getDecoder().decode(UNICODE_TEST);
+        PickledSessionConnector p = new PickledSessionConnector(data);
         ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
         PythonPickle pickleData = new PythonPickle(bbks);
         List<Op> ops = pickleData.ops();
         Iterator<Op> opIterator = ops.iterator();
         while(opIterator.next().code() != PythonPickle.Opcode.DICT) {}
-        PickledSessionConnector.deserializeBooleanField((opIterator));
+        p.deserializeBooleanField((opIterator));
     }
 
     @Test(expectedExceptions={IllegalArgumentException.class})
     public void testNumberUnexpectedOpCode() {
         byte[] data = Base64.getDecoder().decode(UNICODE_TEST);
+        PickledSessionConnector p = new PickledSessionConnector(data);
         ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
         PythonPickle pickleData = new PythonPickle(bbks);
         List<Op> ops = pickleData.ops();
         Iterator<Op> opIterator = ops.iterator();
         while(opIterator.next().code() != PythonPickle.Opcode.DICT) {}
-        PickledSessionConnector.deserializeNumberField((opIterator));
+        p.deserializeNumberField((opIterator));
     }
 
     @Test(expectedExceptions={IllegalArgumentException.class})
     public void testStringUnexpectedOpCode() {
         byte[] data = Base64.getDecoder().decode(LONG_NONZERO);
+        PickledSessionConnector p = new PickledSessionConnector(data);
         ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(data);
         PythonPickle pickleData = new PythonPickle(bbks);
         List<Op> ops = pickleData.ops();
         Iterator<Op> opIterator = ops.iterator();
         while(opIterator.next().code() != PythonPickle.Opcode.EMPTY_DICT) {}
         Map<Integer, String> memo = new HashMap<Integer, String>();
-        PickledSessionConnector.deserializeStringField(opIterator, memo);
+        p.deserializeStringField(opIterator, memo);
     }
 }
