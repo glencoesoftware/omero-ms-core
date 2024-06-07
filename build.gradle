@@ -7,8 +7,8 @@ plugins {
 group = 'com.glencoesoftware.omero'
 version = '0.9.1-SNAPSHOT'
 
-sourceCompatibility = 1.11
-targetCompatibility = 1.11
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
