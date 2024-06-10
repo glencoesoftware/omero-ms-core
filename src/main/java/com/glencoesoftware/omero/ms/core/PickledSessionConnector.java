@@ -21,6 +21,7 @@ package com.glencoesoftware.omero.ms.core;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -69,6 +70,8 @@ public class PickledSessionConnector implements IConnector {
 
     private Long userId;
 
+    private String b64Session;
+
     protected PickledSessionConnector() {
     }
 
@@ -77,6 +80,7 @@ public class PickledSessionConnector implements IConnector {
     }
 
     protected void init(byte[] sessionData) {
+        b64Session = Base64.getEncoder().encodeToString(sessionData);
         ByteBufferKaitaiStream bbks = new ByteBufferKaitaiStream(sessionData);
         PythonPickle pickleData = new PythonPickle(bbks);
         List<Op> ops = pickleData.ops();
@@ -154,9 +158,13 @@ public class PickledSessionConnector implements IConnector {
                         case "is_public":
                             isPublic = deserializeBooleanField(opIterator);
                             break;
+                        default:
+                            log.warn("Unexpected field name in connector: "
+                                     + fieldName);
                     }
                 } catch (Exception e) {
                     log.error("Exception while deserializing: {}", fieldName);
+                    log.error("Pickled Session: " + b64Session);
                     throw e;
                 }
             }
@@ -259,6 +267,11 @@ public class PickledSessionConnector implements IConnector {
         } else if (value.code() == PythonPickle.Opcode.BINGET
                 || value.code() == PythonPickle.Opcode.LONG_BINGET) {
             v = memo.get(value.arg());
+            if (v == null) {
+                throw new IllegalArgumentException(
+                        "Failed to find key in memo: " +
+                        value.arg().toString());
+            }
         } else if (throwOnUnexpected){
             throw new IllegalArgumentException(
                     "Unexpected opcode for string field: " + value.code());
