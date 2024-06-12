@@ -76,7 +76,13 @@ public class PickledSessionConnector implements IConnector {
     }
 
     public PickledSessionConnector(byte[] serialized) {
-        init(serialized);
+        try {
+            init(serialized);
+        } catch (Exception e) {
+            log.error("Pickled Session: {}",
+                    Base64.getEncoder().encodeToString(serialized));
+            throw e;
+        }
     }
 
     protected void init(byte[] sessionData) {
@@ -159,12 +165,11 @@ public class PickledSessionConnector implements IConnector {
                             isPublic = deserializeBooleanField(opIterator);
                             break;
                         default:
-                            log.warn("Unexpected field name in connector: "
-                                     + fieldName);
+                            log.warn("Unexpected field name in connector: {}",
+                                     fieldName);
                     }
                 } catch (Exception e) {
                     log.error("Exception while deserializing: {}", fieldName);
-                    log.error("Pickled Session: " + b64Session);
                     throw e;
                 }
             }
