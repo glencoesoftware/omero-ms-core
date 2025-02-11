@@ -92,6 +92,11 @@ public class OmeroRequest implements Closeable {
         try {
             client.joinSession(omeroSessionKey).detachOnDestroy();
             log.debug("Successfully joined session: {}", omeroSessionKey);
+        } catch (Exception e) {
+            span.error(e);
+            log.error("Failed to join session: {}", omeroSessionKey);
+            client.closeSession();
+            throw new CannotCreateSessionException("Failed to join session");
         } finally {
             span.finish();
         }
