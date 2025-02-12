@@ -30,3 +30,8 @@ jobs:
         if: github.event_name != 'pull_request' && matrix.java == 11
         run: |
           ./gradlew -PArtifactoryUserName=${ArtifactoryUserName} -PArtifactoryPassword=${ArtifactoryPassword} publish
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: omero-ms-core ${{ matrix.java }}
+          path: build/libs/*
