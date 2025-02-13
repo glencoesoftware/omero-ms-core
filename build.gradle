@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.glencoesoftware.omero'
-version = '0.9.1'
+version = '0.9.2-SNAPSHOT'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
