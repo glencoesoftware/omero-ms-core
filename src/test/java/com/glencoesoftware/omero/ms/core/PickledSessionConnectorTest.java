@@ -421,6 +421,16 @@ public class PickledSessionConnectorTest {
     private static String BINUNICODE8_TEST = "gASVEgAAAAAAAAB9lI0EAAAAAAAAAHRlc3SUjARkaWN0lHMu";
     //python3>>> base64.b64encode(b'\x80\x04\x95\x12\x00\x00\x00\x00\x00\x00\x00}\x94\x8d\x04\x00\x00\x00\x00\x00\x00\x00test\x94\x8c\x04dict\x94s.')
 
+    private static String STRING_USER_ID = "gASVeAAAAAAAAAB9lCiMBmJhbmFuYZRLFo"
+            + "wJY29ubmVjdG9ylH2UKIwJc2VydmVyX2lklIwCLTGUjAlpc19zZWN1cmWUiIwHd"
+            + "XNlcl9pZJSMAzEyM5SMEW9tZXJvX3Nlc3Npb25fa2V5lIwGYWJjMTIzlIwJaXNf"
+            + "cHVibGljlIl1dS4=";
+
+    private static String MEMOIZED_SESSION_ID = "gASVfwAAAAAAAAB9lCiMBmJhbmFuY"
+            + "ZRLFowJY29ubmVjdG9ylH2UKIwGa2V5ZHVwlIwGYWJjMTIzlIwJc2VydmVyX2lk"
+            + "lIwCLTGUjAlpc19zZWN1cmWUiIwHdXNlcl9pZJRLe4wRb21lcm9fc2Vzc2lvbl9"
+            + "rZXmUaAWMCWlzX3B1YmxpY5SJdXUu";
+
     @Test
     public void testUnpicklingJDBC() {
         IConnector v = new JDBCPickledSessionConnector(DB_SESSION_DATA);
@@ -500,6 +510,18 @@ public class PickledSessionConnectorTest {
         Assert.assertEquals(
             v.getOmeroSessionKey(), "29071013-a8c4-465a-9bdf-2674222ca89b");
         Assert.assertEquals(v.getUserId(), Long.valueOf(2L));
+    }
+
+    @Test(expectedExceptions={IllegalArgumentException.class})
+    public void testUnpicklingRedisWithStringUserId() {
+        IConnector v = new PickledSessionConnector(
+                Base64.getDecoder().decode(STRING_USER_ID));
+    }
+
+    @Test(expectedExceptions={IllegalArgumentException.class})
+    public void testUnpicklingRedisWithSessionIdMemoizedInConnector() {
+        IConnector v = new PickledSessionConnector(
+                Base64.getDecoder().decode(MEMOIZED_SESSION_ID));
     }
 
     @Test
