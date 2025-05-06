@@ -78,32 +78,32 @@ public class OmeroRequestCtxTest {
         Assert.assertTrue(OmeroRequestCtx.getBooleanParameter(params, "boolean1"));
     }
 
-    @DataProvider(name = "valid longs")
+    @DataProvider(name = "valid image IDs")
     public Object[][] validLongs() {
         return new Object[][] {
-            {"0", Long.valueOf(0)},
             {"1", Long.valueOf(1)},
             {String.valueOf(Integer.MAX_VALUE), Long.valueOf(Integer.MAX_VALUE)},
-            {String.valueOf(-Integer.MAX_VALUE), Long.valueOf(-Integer.MAX_VALUE)},
             {String.valueOf(Long.MAX_VALUE), Long.valueOf(Long.MAX_VALUE)}
         };
     }
 
-    @Test(dataProvider = "valid longs")
+    @Test(dataProvider = "valid image IDs")
     public void testGetImageIdFromString(String value, Long id) {
         Assert.assertEquals(OmeroRequestCtx.getImageIdFromString(value), id);
     }
 
-    @DataProvider(name = "invalid longs")
+    @DataProvider(name = "invalid image IDs")
     public Object[][] invalidLongs() {
         return new Object[][] {
+            {"0"},
             {"not a number"},
-            {"0.1"}
+            {"0.1"},
+            {String.valueOf(-Integer.MAX_VALUE)}
         };
     }
 
     @Test(
-        dataProvider = "invalid longs",
+        dataProvider = "invalid image IDs",
         expectedExceptions = {IllegalArgumentException.class},
         expectedExceptionsMessageRegExp="Incorrect format for imageId parameter '.*'"
     )

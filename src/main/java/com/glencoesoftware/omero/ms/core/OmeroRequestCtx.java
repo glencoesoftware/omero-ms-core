@@ -96,19 +96,26 @@ public abstract class OmeroRequestCtx {
     }
 
     /**
-     * Parse a string value as a Long object
+     * Parse a string value as a valid image ID
      * @param imageIdString a value representing an image ID
-     * @return the image ID as an Long object
+     * @return the image ID as a Long
      * @throw an IllegalArgumentException if the string cannot be parsed as a Long
+     * or if the parsed Long is not positive
      */
     public static Long getImageIdFromString(String imageIdString)
         throws IllegalArgumentException{
+        Long imageId;
         try {
-            return Long.parseLong(imageIdString);
+            imageId = Long.parseLong(imageIdString);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Incorrect format for "
                 + "imageId parameter '" + imageIdString + "'");
         }
+        if (imageId <= 0) {
+            throw new IllegalArgumentException("Incorrect format for "
+                + "imageId parameter '" + imageIdString + "'");
+        }
+        return imageId;
     }
 
     /**
