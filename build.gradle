@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.glencoesoftware.omero'
-version = '0.10.0'
+version = '0.10.1-SNAPSHOT'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -60,8 +60,8 @@ dependencies {
     implementation 'io.zipkin.brave:brave:5.6.8'
     implementation 'io.zipkin.brave:brave-http:4.13.6'
     implementation 'io.zipkin.brave:brave-instrumentation-http:5.6.8'
-    implementation 'io.lettuce:lettuce-core:5.2.0.RELEASE'
-    implementation 'org.openmicroscopy:omero-blitz:5.8.0'
+    implementation 'io.lettuce:lettuce-core:6.7.1.RELEASE'
+    implementation 'org.openmicroscopy:omero-blitz:5.8.3'
     implementation 'io.vertx:vertx-web:4.5.14'
     implementation 'io.vertx:vertx-jdbc-client:4.5.14'
     implementation 'io.kaitai:kaitai-struct-runtime:0.8'

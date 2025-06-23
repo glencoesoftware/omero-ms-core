@@ -21,6 +21,8 @@ package com.glencoesoftware.omero.ms.core;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.vertx.core.MultiMap;
+
 import brave.Tracing;
 import brave.propagation.Propagation.Setter;
 import brave.propagation.TraceContext.Injector;
@@ -59,5 +61,78 @@ public abstract class OmeroRequestCtx {
                 tracing.propagation().injector(SETTER);
         injector.inject(
                 Tracing.currentTracer().currentSpan().context(), traceContext);
+    }
+
+    /**
+     * Return the key of a multi-map
+     * @param params a multi-map object
+     * @param key the key to return
+     * @return true if the key exists and has a value equal to true, false otherwise
+     */
+    public static String getCheckedParam(MultiMap params, String key)
+        throws IllegalArgumentException {
+        String value = params.get(key);
+        if (null == value) {
+            throw new IllegalArgumentException("Missing parameter '"
+                + key + "'");
+        }
+        return value;
+    }
+
+    /**
+     * Return a key as a boolean from a multimap
+     * @param params a MultiMap object
+     * @param key a String specifying the key
+     * @return true if the key exists and has a value equal to true, false otherwise
+     */
+    public static Boolean getBooleanParameter(MultiMap params, String key) {
+        if (params.get(key) != null) {
+            String booleanString = params.get(key).toLowerCase();
+            if (booleanString.equals("true")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Parse a string value as a valid image ID
+     * @param imageIdString a value representing an image ID
+     * @return the image ID as a Long
+     * @throw an IllegalArgumentException if the string cannot be parsed as a Long
+     * or if the parsed Long is not positive
+     */
+    public static Long getImageIdFromString(String imageIdString)
+        throws IllegalArgumentException{
+        Long imageId;
+        try {
+            imageId = Long.parseLong(imageIdString);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Incorrect format for "
+                + "imageId parameter '" + imageIdString + "'");
+        }
+        if (imageId <= 0) {
+            throw new IllegalArgumentException("Incorrect format for "
+                + "imageId parameter '" + imageIdString + "'");
+        }
+        return imageId;
+    }
+
+    /**
+     * Parse a string value as an Integer and return it
+     * @param intString a value representing an integer
+     * @return the value parsed as an Integer object
+     * @throw an IllegalArgumentException if the string cannot be parsed as an integer
+     */
+    public static Integer getIntegerFromString(String intString)
+        throws IllegalArgumentException{
+        Integer i = null;
+        try {
+            i = Integer.parseInt(intString);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Incorrect format for "
+                + "parameter value '" + intString + "'");
+        }
+        return i;
     }
 }
