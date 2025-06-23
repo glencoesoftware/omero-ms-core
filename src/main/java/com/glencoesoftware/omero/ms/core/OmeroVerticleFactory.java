@@ -55,16 +55,6 @@ public class OmeroVerticleFactory
     }
 
     /* (non-Javadoc)
-     * @see io.vertx.core.spi.VerticleFactory#createVerticle(java.lang.String, java.lang.ClassLoader)
-     */
-    public Verticle createVerticle(
-            String verticleName, ClassLoader classLoader)
-                    throws Exception {
-        return (Verticle) applicationContext.getBean(
-                VerticleFactory.removePrefix(verticleName));
-    }
-
-    /* (non-Javadoc)
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
     @Override
@@ -74,9 +64,10 @@ public class OmeroVerticleFactory
     }
 
 	@Override
-	public void createVerticle(String verticleName, ClassLoader classLoader, Promise<Callable<Verticle>> promise) {
-		Callable<Verticle> callable = () -> createVerticle(verticleName, classLoader);
-		promise.complete(callable);
+	public void createVerticle(String verticleName, ClassLoader classLoader,
+	                           Promise<Callable<Verticle>> promise) {
+		promise.complete(() -> (Verticle) applicationContext.getBean(
+                VerticleFactory.removePrefix(verticleName)));
 	}
 
   }
