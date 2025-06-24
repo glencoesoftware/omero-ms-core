@@ -20,7 +20,6 @@ package com.glencoesoftware.omero.ms.core;
 
 import java.util.concurrent.Callable;
 
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -38,11 +37,7 @@ import io.vertx.core.spi.VerticleFactory;
 public class OmeroVerticleFactory
         implements VerticleFactory, ApplicationContextAware {
 
-    private static final org.slf4j.Logger log =
-            LoggerFactory.getLogger(OmeroVerticleFactory.class);
-
     private ApplicationContext applicationContext;
-
     /* (non-Javadoc)
      * @see io.vertx.core.spi.VerticleFactory#prefix()
      */
@@ -64,7 +59,7 @@ public class OmeroVerticleFactory
 	public void createVerticle(String verticleName, ClassLoader classLoader,
 	                           Promise<Callable<Verticle>> promise) {
 		promise.complete(() -> (Verticle) applicationContext.getBean(
-		 VerticleFactory.removePrefix(verticleName)));
+                VerticleFactory.removePrefix(verticleName)));
 	}
 
   }
