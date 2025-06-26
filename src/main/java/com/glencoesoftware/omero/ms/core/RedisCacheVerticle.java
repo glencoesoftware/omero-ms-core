@@ -79,8 +79,10 @@ public class RedisCacheVerticle extends AbstractVerticle {
 
     @Override
     public void stop() {
-        connection.close();
-        client.shutdown();
+        if (connection != null) {
+          connection.close();
+          client.shutdown();
+        }
     }
 
     /**
