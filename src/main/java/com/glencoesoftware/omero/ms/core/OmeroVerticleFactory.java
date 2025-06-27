@@ -55,11 +55,10 @@ public class OmeroVerticleFactory
         this.applicationContext = applicationContext;
     }
 
-	@Override
-	public void createVerticle(String verticleName, ClassLoader classLoader,
-	                           Promise<Callable<Verticle>> promise) {
-		promise.complete(() -> (Verticle) applicationContext.getBean(
+    @Override
+    public void createVerticle(String verticleName, ClassLoader classLoader,
+            Promise<Callable<Verticle>> promise) {
+        promise.complete(() -> (Verticle) applicationContext.getBean(
                 VerticleFactory.removePrefix(verticleName)));
-	}
-
-  }
+    }
+}
