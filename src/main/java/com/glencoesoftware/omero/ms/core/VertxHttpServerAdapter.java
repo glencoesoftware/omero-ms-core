@@ -40,7 +40,7 @@ import io.vertx.core.net.SocketAddress;
 class VertxHttpServerAdapter extends HttpServerAdapter<HttpServerRequest, HttpServerResponse> {
 
   @Override public String method(HttpServerRequest request) {
-    return request.rawMethod();
+    return request.method().name();
   }
 
   @Override public String path(HttpServerRequest request) {

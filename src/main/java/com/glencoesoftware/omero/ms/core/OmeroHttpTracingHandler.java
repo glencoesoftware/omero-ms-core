@@ -184,7 +184,7 @@ public class OmeroHttpTracingHandler implements Handler<RoutingContext> {
                 return;
             }
             VertxHttpServerAdapter.setCurrentMethodAndPath(
-                context.request().rawMethod(),
+                context.request().method().name(),
                 context.currentRoute().getPath()
             );
             try {
