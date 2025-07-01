@@ -18,10 +18,13 @@
 
 package com.glencoesoftware.omero.ms.core;
 
+import java.util.concurrent.Callable;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import io.vertx.core.Promise;
 import io.vertx.core.Verticle;
 import io.vertx.core.spi.VerticleFactory;
 
@@ -35,32 +38,12 @@ public class OmeroVerticleFactory
         implements VerticleFactory, ApplicationContextAware {
 
     private ApplicationContext applicationContext;
-
-    @Override
-    public boolean blockingCreate() {
-        // Usually verticle instantiation is fast but since our verticles are
-        // Spring Beans, they might depend on other beans/resources which are
-        // slow to build/lookup.
-        return true;
-    }
-
     /* (non-Javadoc)
      * @see io.vertx.core.spi.VerticleFactory#prefix()
      */
     @Override
     public String prefix() {
         return "omero";
-    }
-
-    /* (non-Javadoc)
-     * @see io.vertx.core.spi.VerticleFactory#createVerticle(java.lang.String, java.lang.ClassLoader)
-     */
-    @Override
-    public Verticle createVerticle(
-            String verticleName, ClassLoader classLoader)
-                    throws Exception {
-        return (Verticle) applicationContext.getBean(
-                VerticleFactory.removePrefix(verticleName));
     }
 
     /* (non-Javadoc)
@@ -72,4 +55,10 @@ public class OmeroVerticleFactory
         this.applicationContext = applicationContext;
     }
 
-  }
+    @Override
+    public void createVerticle(String verticleName, ClassLoader classLoader,
+            Promise<Callable<Verticle>> promise) {
+        promise.complete(() -> (Verticle) applicationContext.getBean(
+                VerticleFactory.removePrefix(verticleName)));
+    }
+}
