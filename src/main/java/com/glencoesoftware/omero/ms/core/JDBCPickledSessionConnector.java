@@ -21,7 +21,7 @@ package com.glencoesoftware.omero.ms.core;
 import java.util.Arrays;
 import java.util.Base64;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.LoggerFactory;
 
 public class JDBCPickledSessionConnector extends PickledSessionConnector {

@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.LoggerFactory;
 
 import com.glencoesoftware.omero.ms.core.PythonPickle.Op;
