@@ -10,10 +10,12 @@ Requirements
 * OMERO 5.6.x+
 * OMERO.web 5.6.x+
 * Redis backed sessions
-* Java 8+
+* Java 11+
 
 Development Installation
 ========================
+
+1. Install Java 17 or later
 
 1. Clone the repository::
 

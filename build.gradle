@@ -7,17 +7,18 @@ plugins {
 group = 'com.glencoesoftware.omero'
 version = '0.11.1-SNAPSHOT'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+compileJava {
+    options.release = 11
+}
 
 repositories {
     mavenCentral()
     maven {
-        name 'Unidata'
-        url 'https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases'
+        name = 'Unidata'
+        url = 'https://artifacts.glencoesoftware.com/artifactory/unidata-releases'
     }
     maven {
-        url 'https://artifacts.glencoesoftware.com/artifactory/ome.releases'
+        url = 'https://artifacts.glencoesoftware.com/artifactory/ome.releases'
     }
 }
 
@@ -76,6 +77,21 @@ test {
   useTestNG()
 }
 
+jar {
+    manifest {
+        attributes(
+            "Created-By": "Gradle ${gradle.gradleVersion}",
+            "Build-Jdk": "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+            "Built-By": System.properties['user.name'],
+            "Built-On": new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
+            "Implementation-Build": "git rev-parse --verify HEAD".execute().getText().trim(),
+            "Implementation-Title": "OMERO Microservice Core",
+            "Implementation-Version": archiveVersion,
+            "Implementation-Vendor": "Glencoe Software Inc.",
+        )
+    }
+}
+
 publishing {
     publications {
         omeroMsCore(MavenPublication) {
@@ -85,8 +101,8 @@ publishing {
 
     repositories {
         maven {
-            name 'gs-omero-snapshots-local'
-            url 'https://artifacts.glencoesoftware.com/artifactory/gs-omero-snapshots-local'
+            name = 'gs-omero-snapshots-local'
+            url = 'https://artifacts.glencoesoftware.com/artifactory/gs-omero-snapshots-local'
             credentials {
                username = project.properties.ArtifactoryUserName
                password = project.properties.ArtifactoryPassword
